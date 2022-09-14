@@ -21,13 +21,13 @@ useEffect(()=>{
     }
   }
   getUser();
-},[token])
+},[token,dispatch])
 useEffect(()=>{
   if(!user){
     router.push("/login?redirect=/orders")
   }  
     console.log("user",user)
-  },[user])
+  },[user,router])
   
   return (
    <Layout title={"orders page"} pages={[]}>

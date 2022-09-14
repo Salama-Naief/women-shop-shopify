@@ -44,7 +44,7 @@ import { useRouter } from 'next/router';
     const variant= product.variants.edges.find(varient=>(varient.node.selectedOptions[0].value===variantSize)&&(varient.node.selectedOptions[1].value===variantcolor))
     setVarientData(variant.node)
     
-   },[variantSize,variantcolor])
+   },[product.variants.edges,variantSize,variantcolor])
   
    //update cart
    const handleUpdate=()=>{

@@ -50,9 +50,9 @@ import { getCollectionByHande } from '../../lib/shopify';
     const categoryArray=[];
     const sizeArray=[];
 
-    useEffect(()=>{
-        console.log("products",collection)
-    },[])
+    //useEffect(()=>{
+   //     console.log("products",collection)
+   // },[])
   //  let miniPrice=0;
    // let maxPrice=0;
    /*products&&products.forEach(item=>{  
@@ -162,7 +162,7 @@ import { getCollectionByHande } from '../../lib/shopify';
         <Layout title="products pages" pages={[]}>
             <div className='relative'>
                 <div className='overflow-hidden block w-full h-72'>
-                    <Image src={collection.image.url} layout='responsive' objectPosition={"center"} width={32} height={16} loading="eager"/>
+                    <Image src={collection.image.url} layout='responsive' objectPosition={"center"} width={32} height={16} loading="eager" alt=''/>
                 </div>
                 <div className='absolute top-1/3 left-1/2 text-primary'>
                     <h1 className='text-3xl font-bold capitalize w-full text-center my-8'>{collection.title}</h1>

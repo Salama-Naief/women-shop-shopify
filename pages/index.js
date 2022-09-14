@@ -10,11 +10,10 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import clientTranslated,{getCollectionByHande, getCustomer} from '../lib/shopify';
-import Test from '../components/carousel/test';
+import {getCollectionByHande} from '../lib/shopify';
 import { Store } from '../utils/Store';
 
- function Home({errMsg ,newColloction,saleColloction,womenColloction,menColloction}) {
+ function Home({errMsg ,newColloction,womenColloction,menColloction}) {
   const router =useRouter();
   const {pathname,query,asPath}=router;
   const {state}=useContext(Store);
@@ -32,7 +31,7 @@ import { Store } from '../utils/Store';
 
 
 
-  useEffect(()=>{
+  /*useEffect(()=>{
 
     setNewColection(newColloction)
     setWomanColection(womenColloction)
@@ -43,11 +42,11 @@ import { Store } from '../utils/Store';
     //console.log("womenColloction",womenColloction)
     console.log("state",state)
   
-  },[])
+  },[])*/
   
    useEffect(()=>{
     router.push({pathname,query},asPath,{locale:i18n.language})
-  },[i18n.language,/* router*/])
+  },[i18n.language, router,pathname,query,asPath])
 
 
 
@@ -99,7 +98,6 @@ import { Store } from '../utils/Store';
       <p className='text-gray-900 mx-4 mt-2 ' dangerouslySetInnerHTML={{__html:i18n.language==="ar"?shoDetail.attributes.aboutUs_arabic:shoDetail.attributes.aboutUs}}/>
         </div>*/}
     </div>
-    <Test/>
     </Layout>
   )
 }
@@ -108,18 +106,12 @@ export async function getServerSideProps({locale}) {
   
   try{
     const uppaerLocale=locale;
+
     
-    /*const SaleColloction=await clientTranslated(locale).client.collection.fetchByHandle("sale");
-    const newColloction=await clientTranslated(locale).client.collection.fetchByHandle("new")
-    //const menColloction=await clientTranslated(locale).client.collection.fetchByHandle("men");
-    const womenColloction=await clientTranslated(locale).client.collection.fetchByHandle("women");
-    */
-//const productss=await getProductsInCollection("women",10);
-    
-    const SaleColloction =await getCollectionByHande("sale",6,locale)
-    const newColloction =await getCollectionByHande("new",6,locale)
-    const womenColloction =await getCollectionByHande("women",6,locale)
-    const menColloction =await getCollectionByHande("men",6,locale)
+  //  const SaleColloction =await getCollectionByHande("sale",6,locale)
+  //  const newColloction =await getCollectionByHande("new",6,locale)
+   // const womenColloction =await getCollectionByHande("women",6,locale)
+   // const menColloction =await getCollectionByHande("men",6,locale)
     
    
     

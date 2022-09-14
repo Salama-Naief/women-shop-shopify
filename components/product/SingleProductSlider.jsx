@@ -22,9 +22,6 @@ import dynamic from "next/dynamic";
 
    
 
-useEffect(()=>{
-  
-},[slideIndex])
 
 
     useEffect(()=>{
@@ -34,7 +31,7 @@ useEffect(()=>{
         nav2&&nav2.slickGoTo(index)
         }
   })
-    },[nav2,img,slideIndex])
+    },[nav2,img,slideIndex,variants])
 
     return (
       <div className="w-full">
