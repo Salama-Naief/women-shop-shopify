@@ -152,10 +152,10 @@ export async function getStaticProps({locale}) {
 
         return {
           props: {
-            saleColloction:SaleColloction.data||{},
-            newColloction:newColloction.data||{},
-            menColloction:menColloction.data||{},
-            womenColloction:womenColloction.data||{},
+            saleColloction:SaleColloction||{},
+            newColloction:newColloction||{},
+            menColloction:menColloction||{},
+            womenColloction:womenColloction||{},
             errMsg:false,
             ...(await serverSideTranslations(locale, ['common',"product"]))
           }
