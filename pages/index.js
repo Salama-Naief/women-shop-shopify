@@ -12,6 +12,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {getCollectionByHande} from '../lib/shopify';
 import { Store } from '../utils/Store';
+import { server } from '../config';
 
  function Home({errMsg ,newColloction,womenColloction,menColloction}) {
   const router =useRouter();
@@ -28,7 +29,14 @@ import { Store } from '../utils/Store';
 
  
 
-
+/*useEffect(()=>{
+  const r=async ()=>{
+    const newRes=await fetch(`${server}/api/shopify/getCollections`)
+    const r=await newRes.json();
+    console.log("rrrrr==>",r)
+  }
+  r()
+},[])*/
 
 
   /*useEffect(()=>{
@@ -46,7 +54,7 @@ import { Store } from '../utils/Store';
   
    useEffect(()=>{
     router.push({pathname,query},asPath,{locale:i18n.language})
-  },[i18n.language, router,pathname,query,asPath])
+  },[i18n.language])
 
 
 
@@ -102,33 +110,58 @@ import { Store } from '../utils/Store';
   )
 }
 
-export async function getServerSideProps({locale}) {
-  
+export async function getStaticProps({locale}) {
+  const headers={
+    "accept":"application/json",
+    "Content-type":"application/json"
+ }
   try{
     const uppaerLocale=locale;
+  /*  const resSale =await fetch(`${server}/api/shopify/getCollections`,{
+      method:"POST",
+      headers,
+         body:JSON.stringify({handle:"sale",proudctNum:6,locale})
+   });
+    const SaleColloction=await resSale.json();
 
-    
-  //  const SaleColloction =await getCollectionByHande("sale",6,locale)
-  //  const newColloction =await getCollectionByHande("new",6,locale)
-   // const womenColloction =await getCollectionByHande("women",6,locale)
-   // const menColloction =await getCollectionByHande("men",6,locale)
-    
-   
-    
+//new collection
+    const resNew =await fetch(`${server}/api/shopify/getCollections`,{
+      method:"POST",
+      headers,
+         body:JSON.stringify({handle:"new",proudctNum:6,locale})
+   });
+    const newColloction=await resNew.json();
 
+    const resWomen =await fetch(`${server}/api/shopify/getCollections`,{
+      method:"POST",
+      headers,
+         body:JSON.stringify({handle:"women",proudctNum:6,locale})
+   });
+    const womenColloction=await resWomen.json();
+
+    const resMen =await fetch(`${server}/api/shopify/getCollections`,{
+      method:"POST",
+      headers,
+         body:JSON.stringify({handle:"men",proudctNum:6,locale})
+   });
+    const menColloction=await resMen.json();*/
+    const SaleColloction =await getCollectionByHande("sale",6,locale)
+    const newColloction  =await getCollectionByHande("new",6,locale)
+    const womenColloction =await getCollectionByHande("women",6,locale)
+    const menColloction =await getCollectionByHande("men",6,locale)
 
         return {
           props: {
-            saleColloction:SaleColloction||{},
-            newColloction:newColloction||{},
-            menColloction:menColloction||{},
-            womenColloction:womenColloction||{},
+            saleColloction:SaleColloction.data||{},
+            newColloction:newColloction.data||{},
+            menColloction:menColloction.data||{},
+            womenColloction:womenColloction.data||{},
             errMsg:false,
             ...(await serverSideTranslations(locale, ['common',"product"]))
           }
         }
   }catch(err){
-    console.log("error ==>",err)
+    console.log('error===>',err)
     return {
       props: {
         errMsg:true,

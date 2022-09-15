@@ -68,10 +68,7 @@ export default function Pyament({pages}) {
 }
 export async function getStaticProps({locale}) {
   
-  try{
-   
-        const pagesRes = await fetch(`${API_URL}/api/pages?populate=*`)
-        const pages = await pagesRes.json();   
+  try{ 
        return {
           props: {
             pages:pages.data||[],

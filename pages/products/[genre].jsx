@@ -340,11 +340,11 @@ export async function getServerSideProps(ctx) {
     try{
         const {genre} =ctx.params;
         const locale=ctx.locale;
-         const collection=await getCollectionByHande(genre,20,locale)
+        const collection=await getCollectionByHande(genre,20,locale)
         
             return {
             props: {
-                collection:JSON.parse(JSON.stringify(collection)),
+                collection:JSON.parse(JSON.stringify(collection))||{},
                 errMsg:false, 
                 ...(await serverSideTranslations(locale, ['common',"product"]))
             },
