@@ -5,14 +5,15 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { MdOutlineFavoriteBorder,MdOutlineFavorite } from "react-icons/md";
 import Link from "next/link";
-import {API_URL} from "../../utils/connectionConfig";
+import {API_URL} from "../../utils/url";
 import { Store } from "../../utils/Store";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import {useTranslation} from "next-i18next";
+import Stars from "../rating/Stars"
 
- function ProductSliders({productHover,images,id,handle,name,title,variant}) {
+ function ProductSliders({productHover,images,id,handle,rateValue,numOfPeopleRated,title,variant}) {
     const router =useRouter();
     const {state,dispatch} =useContext(Store);
     const[nav1,setNav1]=useState(null)
@@ -26,7 +27,14 @@ import {useTranslation} from "next-i18next";
     const {t,i18n}=useTranslation();
 
 
-
+//use Effect
+useEffect(()=>{
+  if(state.lovedItems&&state.lovedItems.filter(a=>a.id===variant.id).length>0){
+    setLiked(true)
+  }else{
+    setLiked(false)
+  }
+},[state.lovedItems,variant])
 
      //add to cart function
      const handleAddToCart=()=>{
@@ -36,95 +44,19 @@ import {useTranslation} from "next-i18next";
       
     }
     
-    //use Effect
-  /*  useEffect(()=>{
-          if(product.userLiked&&product.userLiked.filter(a=>a.userId===state.user?.user.id).length>0){
-            setLiked(true)
-          }else{
-            setLiked(false)
-          }
-    },[state.user,product])
-
-
-   
-
-  //handle like and dislike
+      //handle like and dislike
   const handleLike=async()=>{
-
+    dispatch({type:"ADD_TO_LOVEDITEMS",payload:{...variant,handle:handle}})
+  }
     
-      let rate={};
-    if(!waitRes&&state.user){
-      if(product.userLiked){
-        if(product.userLiked.filter(a=>a.userId===state.user.user.id).length<=0){
-          rate={
-            data:{
-              rate:product.rate+1,
-              userLiked:[...product.userLiked,{userId:state.user.user.id}]
-            }
-         }
-        }else{
-          rate={
-            data:{
-              rate:product.rate-1,
-              userLiked:product.userLiked.filter(a=>a.userId!==state.user.user.id)
-            }
-         }
-        }
-     
-      }else{
-        rate={
-          data:{
-            rate:product.rate+1,
-            userLiked:[{userId:state.user.user.id}]
-          }
-       }
-      } 
-    setWaitRes(true);
-     const res =await fetch(`${API_URL}/api/products/${id}`,{
-        method:"PUT",
-        headers:{
-            "accept":"application/json",
-            "Content-type":"application/json",
-            "authorization":`Bearer ${state.user.jwt}`
-         },
-         body:JSON.stringify(rate)
-     });
 
-     const productRate=await res.json();
-     if(productRate.error){
-      setWaitRes(false)
-      setErrMsg(productRate.error.message)
-     }else{
-      setProductRate(productRate.data.attributes.rate)
-      setErrMsg("")
-      setWaitRes(false)
-      router.push(router.asPath)
-      setLiked(!liked);
-     }
-   
-    }
-    }
+const handleDislike=()=>{
+  dispatch({type:"REMOVE_LOVED_PRODUCT",payload:{...variant}})
+}
 
-    //returm imge url
-    const imgData=(img)=>{
-      if(img.attributes.formats.small){
-        return {
-          url:img.attributes.formats.small.url,
-          width:img.attributes.formats.small.width,
-          height:img.attributes.formats.small.height
-        }
-      }else{
-        return {
-          url:img.attributes.url,
-          width:img.attributes.width,
-          height:img.attributes.height
-        }
-      }
-    }*/
+  
     return (
-      <motion.div className="w-full"
-       
-      >
+      <motion.div className="w-full">
         <Slider
           asNavFor={nav2}
           lazyLoad={true}
@@ -151,14 +83,14 @@ import {useTranslation} from "next-i18next";
          }
         </Slider>
         <div className="flex justify-between items-center px-4 my-4">
-            <div className=" uppercase text-sm text-third"> {name}</div>
+            <div className=" uppercase text-sm text-third flex items-center"><Stars rate={rateValue}/><span className="hidden md:block">({numOfPeopleRated})</span> </div>
             <div className="flex items-center">
               
               {
                 liked?(
-                  <MdOutlineFavorite onClick={()=>handleLike()} className="cursor-pointer text-primary"/>
+                  <MdOutlineFavorite onClick={()=>handleDislike()} className="cursor-pointer text-xl text-secondary"/>
                 ):(
-                  <MdOutlineFavoriteBorder onClick={()=>handleLike()} className="cursor-pointer text-gray-800"/>
+                  <MdOutlineFavoriteBorder onClick={()=>handleLike()} className="cursor-pointer text-xl text-gray-800"/>
                 )
               } 
             </div>

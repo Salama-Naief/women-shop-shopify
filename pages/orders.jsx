@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import React from 'react'
 import { useContext } from 'react';
 import { useEffect } from 'react';
-import Layout from '../components/Layout'
+import Layout from '../components/utils/Layout'
 import { getCustomer } from '../lib/shopify';
 import { Store } from '../utils/Store';
 

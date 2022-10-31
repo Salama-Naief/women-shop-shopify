@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react'
 import Stipper from '../components/payments/Stipper';
-import { API_URL } from '../utils/connectionConfig';
+import { API_URL } from '../utils/url';
 import {Store} from '../utils/Store' 
 export default function Cart() {
     const{state} =useContext(Store);

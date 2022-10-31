@@ -5,7 +5,7 @@
     "Size":"Size",
     "Harry_up":"Harry up! only",
     "left":"left",
-    "add_to_card":"addtocard",
+    "add_to_card":"add to card",
     "buy_now":"Buy now",
     "total":"total",
     "ask_expert":"ask expert",
@@ -18,6 +18,19 @@
     "new_items":"New Items",
     "sales_items":"Greate sales Items",
     "read_more":"read more",
-    "ventor":"ventor"
+    "ventor":"ventor",
+    "name":"name",
+    "email":"email",
+    "message":"message",
+    "your_review":"Your Review:",
+    "wait":"wait...",
+    "send_message":"send message",
+    "people_reviews":"People Reviews",
+    "no_reviews":"No reviews",
+    "rate":"rate:",
+    "comment_success_message":"your message sent succeffuly reload the page to see your review",
+    "comment_error_message":"something wend wrong please try again",
+    "fill_all_fields":"fill all fields",
+    "recent_viewed":"recent viewed"
   
 }

@@ -1,10 +1,10 @@
-import Layout from '../components/Layout';
+import Layout from '../components/utils/Layout';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {useTranslation} from "next-i18next";
 import React, { useContext, useEffect, useState } from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { API_URL } from '../utils/connectionConfig';
+import { API_URL } from '../utils/url';
 import { Store } from '../utils/Store';
 import { createCustomer, getCustomer, login } from '../lib/shopify';
 import Cookies from 'js-cookie';

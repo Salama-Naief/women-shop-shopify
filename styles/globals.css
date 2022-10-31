@@ -24,6 +24,7 @@ a {
 
 ::-webkit-scrollbar{
   width: 5px;
+  height: 5px;
   border-radius: 100%;
 }
 ::-webkit-scrollbar-track{

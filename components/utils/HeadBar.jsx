@@ -5,8 +5,10 @@ import {  MdOutlineDehaze, MdOutlinePersonOutline,
 MdOutlineSearch, MdOutlineShoppingBasket,
 MdOutlineClear,MdChevronRight,MdKeyboardArrowDown
 } from "react-icons/md";
-import { API_URL } from "../utils/connectionConfig";
-import { Store } from "../utils/Store";
+import {HiOutlineShoppingCart} from "react-icons/hi";
+import {BsHeart} from "react-icons/bs";
+import { API_URL } from "../../utils/url";
+import { Store } from "../../utils/Store";
 import {useTranslation} from "next-i18next"
 
 import { I18nContext } from "next-i18next";
@@ -14,9 +16,11 @@ import { i18n } from "next-i18next";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import MenuCart from "./menuCart/MenuCart";
+import MenuCart from "../menuCart/MenuCart";
+import ItemState from "./ItemState";
+import MenuHeart from "../menuCart/MenuHeart";
 
-const HeadBar=({pages})=>{
+const HeadBar=({pages,productTypes})=>{
     const router =useRouter();
     const {state,dispatch} =useContext(Store);
     const pagesContent=pages.length>0?pages:state.pages
@@ -24,9 +28,37 @@ const HeadBar=({pages})=>{
     const [user,setUser]=useState(null);
     const [menuUser,setMenuUser]=useState(false);
     const [menuCart,setMenuCart]=useState(false);
+    const [menuHeart,setMenuHeart]=useState(false);
     const [menuItems,setMenItems]=useState(false);
     const [pageItems,setPageItems]=useState("");
     const {t,i18n} =useTranslation();
+    const [productsItems,setProductsItems]=useState([])
+    const [typeQuery,setTypeQuery]=useState(null);
+
+    
+    useEffect(()=>{
+
+      let clothesArray=[];
+      let accessoryArray=[];
+      let shoesArray=[];
+      productTypes&&productTypes.clothes&&productTypes.clothes.edges.map(clothes=>{
+         if(!clothesArray.includes(clothes.node.productType)){
+          clothesArray.push(clothes.node.productType)
+         }
+      })
+      productTypes&&productTypes.shoes&&productTypes.shoes.edges.map(shoe=>{
+        if(!shoesArray.includes(shoe.node.vendor)){
+          shoesArray.push(shoe.node.vendor)
+        }
+     })
+     productTypes&&productTypes.accessory&&productTypes.accessory.edges.map(accessory=>{
+      if(!accessoryArray.includes(accessory.node.productType)){
+        accessoryArray.push(accessory.node.productType)
+      }
+    })
+    setProductsItems([{type:"accessories",items:accessoryArray},{type:"clothes",items:clothesArray},{type:"shoes",items:shoesArray}])
+    
+     },[productTypes])
 
     useEffect(()=>{
       setCartProduct(state.cart.cartItems)
@@ -46,6 +78,7 @@ const HeadBar=({pages})=>{
 
       setMenItems(false)
       setMenuCart(false)
+      setMenuHeart(false)
     }
     const handleMenus=(type)=>{
       switch (type) {
@@ -53,20 +86,31 @@ const HeadBar=({pages})=>{
         case 'cart':
           setMenItems(false)     
           setMenuCart(true)
+          setMenuHeart(false)
+          break;
+          case 'heart':
+          setMenItems(false)     
+          setMenuCart(false)
+          setMenuHeart(true)
           break;
         case 'items':
           setMenItems(true)    
           setMenuCart(false)
+          setMenuHeart(false)
           break;
         
         default:
           setMenItems(false)
           setMenuCart(false)
+          setMenuHeart(false)
       }
       
     }
 
-
+const handleChandeLang=(e)=>{
+  i18n.changeLanguage(e.target.value)
+  //window.Weglot.switchTo(e.target.value)
+}
    const handleLogout=()=>{
     dispatch({type:"USER_LOGOUT"})
    
@@ -104,11 +148,18 @@ const HeadBar=({pages})=>{
                            
                             <div className="md:hidden w-1/2 mx-1 flex justify-end relative text-gray-900" onClick={()=>handleMenus("cart")}>
                                 <MdOutlineShoppingBasket className="text-2xl md:text-4xl cursor-pointer"/>
-                                <div className="absolute bg-secondary bottom-4 md:bottom-6 right-0 text-white px-1 md:px-2 text-sm rounded-full">{state.cart.cartItems.length>0?state.cart.cartItems.length:"0"}</div>
+                                <div className="absolute text-secondary bottom-4 md:bottom-6 right-0 px-1 md:px-2 rounded-full">{state.cart.cartItems&&(state.cart.cartItems.length>0?state.cart.cartItems.length:"0")}</div>
                             </div>
+                            <div className="md:hidden flex items-center">
+                              <div className="mx-1 flex justify-end relative text-gray-900" onClick={()=>handleMenus("heart")} >
+                                  <BsHeart className="hover:text-secondary text-2xl text-gray-400 font-light cursor-pointer"/>
+                                  <div className="absolute bottom-1 right-1/3 text-primary flex justify-center items-center rounded-full">{state.lovedItems.length>0?state.lovedItems.length:"0"}</div>
+                              </div> 
+
+                              </div>
                             </div>
                             <div className="mx-1">
-                              <select name="" id="" value={i18n.language} onChange={(e)=>i18n.changeLanguage(e.target.value)} className="px-4 py-1 outline-none appearance-none border border-primary text-gray-900 cursor-pointer">
+                              <select name="" id="" value={i18n.language} onChange={(e)=>handleChandeLang(e)} className="px-4 py-1 outline-none appearance-none border border-primary text-gray-900 cursor-pointer">
                                 <option value="en" className={`bg-white text-gray-900 appearance-none`}>English</option>
                                 <option value="ar" className={`bg-white text-gray-900 appearance-none`}>العربية</option>
                               </select>
@@ -118,6 +169,7 @@ const HeadBar=({pages})=>{
          
           {/*menu cart of product*/}
           {menuCart&&<MenuCart setMenuCart={setMenuCart}/>}
+          {menuHeart&&<MenuHeart setMenuHeart={setMenuHeart}/>}
           
               {/*small size menu*/}
           {
@@ -159,17 +211,83 @@ const HeadBar=({pages})=>{
                   </div>
                 </form>
             <div className=" text-base ">
-             {pagesContent.map(page=>(
+             {pages.map(page=>(
                 <div key={page.id} className="px-4 my-4 relative py-1.5 border">
                   <div className="w-full flex justify-between font-semibold capitalize">
-                     <Link href={`${page.attributes.name=="home"?"/":`/products/all-${page.attributes.slug}`}`}><a><span className="font-bold cursor-pointer">{i18n.language==="ar"?page.attributes.name_arabic:page.attributes.name}</span></a></Link>
+                     <Link href={`${page.title=="Home"?"/":`/products/${page.handle}`}`}><a><span className="font-bold cursor-pointer">{page.title}</span></a></Link>
                      <div>
-                     <motion.span initial={{display:"block"}} animate={pageItems===page.attributes.name?{display:"none"}:{display:"block"}}  onClick={()=>setPageItems(pageItems!==page.attributes.name?page.attributes.name:'')}><MdChevronRight className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
-                     <motion.span initial={{display:"none"}} animate={pageItems===page.attributes.name?{display:"block"}:{display:"none"}}  onClick={()=>setPageItems('')}><MdKeyboardArrowDown className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
+                     <motion.span initial={{display:"block"}} animate={pageItems===page.title?{display:"none"}:{display:"block"}}  onClick={()=>setPageItems(pageItems!==page.title?page.title:'')}><MdChevronRight className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
+                     <motion.span initial={{display:"none"}} animate={pageItems===page.title?{display:"block"}:{display:"none"}}  onClick={()=>setPageItems('')}><MdKeyboardArrowDown className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
                      </div>
                   </div>
+                  {page.title.toLowerCase()==="blog"&&<motion.div
+                            initial={{opacity:0,display:"none"}}
+                             animate={(pageItems===page.title)?{display:"block",opacity:1}:{display:"none",opacity:0}}
+                            className={`${i18n.language==="ar"?"right-0":"left-0"} whitespace-nowrap h-fit bg-white w-fit z-30`}>
+                               {page.items.length>0&&<div className="flex-grow capitalize text-gray-900 p-1 w-fit mx-2">
+                                  {
+                                    page.items.map(item=>(
+                                      item.type==="BLOG"&&<Link key={item.id} href={`/blog/${item.title.toLowerCase()}`}>
+                                        <a className="flex items-center">
+                                          <div className={`${typeQuery&&(typeQuery===item.title?"bg-secondary text-white":"bg-white text-gray-600 ")} text-sm  px-2 w-fit py-1 transition ease-in-out duration-400 hover:bg-secondary hover:text-white`}>
+                                            {item.title}
+                                          </div>
+                                          </a>
+                                        </Link>
+                                      ))  
+                                  }
+                                    </div>
+                                 }
+                            </motion.div>
+                    }
+                  {
+                   page.title.toLowerCase()!=="home"&&page.title.toLowerCase()!=="blog"&&<motion.div
+                            initial={{opacity:0,display:"none"}}
+                             animate={(pageItems===page.title)?{display:"block",opacity:1}:{display:"none",opacity:0}}
+                            className={`${i18n.language==="ar"?"right-0":"left-0"} whitespace-nowrap h-fit bg-white w-fit z-30 `}>
+                              <div className="">
+                                {
+                                  productsItems.map((product,index)=>(
+                                    page.title===product.type&&<div key={index} className="flex-grow capitalize h-fit text-gray-900 p-1 mx-2">
+                                    <div className="text-xl  font-md">{product.type==="clothes"&&"clothes type"||product.type==="shoes"&&"shoes ventor"||product.type==="accessories"&&"accessories type"}</div>
+                                    {
+                                      
+                                    product.items.map((item,index)=>(
+                                      <Link key={index} href={`/products/${item}`}><a><div className={`${typeQuery&&(typeQuery===item?"bg-secondary text-white":"bg-white text-gray-600 ")} px-2 test-sm lowercase py-1 transition ease-in-out  duration-600 hover:bg-secondary hover:text-white`}>{item}</div></a></Link>
+                                    ))
 
-                   {
+                                    }
+                                  </div>
+                                  ))
+                                  
+                                   }
+                                {  
+                                 page.items.length>0&&<div className="px-2">
+                                   {/**الخط اللي بي الكولليكشن و النوع */}
+                                      <div className="h-0.5 w-full bg-gray-300"></div>
+                                    </div>
+                                }
+                                {page.items.length>0&&<div className="flex-grow capitalize text-gray-900 p-1 w-fit mx-2">
+                                <div className="text-xl  font-md">collections</div>
+                                  {
+                                    page.items.map(item=>(
+                                      item.type==="COLLECTION"&&<Link key={item.id} href={`/collection/${item.title.trim().replace(" ","-")}`}>
+                                        <a className="flex items-center">
+                                          <div className={`${typeQuery&&(typeQuery===item.title?"bg-secondary text-white":"bg-white text-gray-600 ")} text-sm  px-2 w-fit py-1 transition ease-in-out duration-400 hover:bg-secondary hover:text-white`}>
+                                            {item.title}
+                                          </div>
+                                          {item.tags.length>0&&(item.tags[0].toLowerCase()==="new"&&<ItemState type="new"/>)}
+                                          {item.tags.length>0&&(item.tags[0].toLowerCase()==="saes"&&<ItemState type="sales"/>)}
+                                          </a>
+                                        </Link>
+                                      ))  
+                                  }
+                                    </div>
+                                 }
+                          </div>
+                          </motion.div>
+                          }
+                   {/*
                     page.attributes.name!=="home"&&<motion.div initial={{opacity:0,display:"none"}} animate={(pageItems===page.attributes.name)?{display:"block",opacity:1}:{display:"none",opacity:0}} className="">
                            { page.attributes.newImg.data&&<Link href={`/products/new-${page.attributes.slug}`}><a><div className="min-h-fit w-full mx-2 relative my-2">
                               <Image src={`${API_URL}${page.attributes.newImg.data.attributes.url}`} width={200} height={200} loading="eager" alt={page.attributes.offerImg.data.attributes.name} />
@@ -190,7 +308,7 @@ const HeadBar=({pages})=>{
                             </a></Link>
                            }
                         </motion.div>
-                        }
+                          */ }
                 </div>
              ))}
             </div>

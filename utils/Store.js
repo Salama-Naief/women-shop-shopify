@@ -5,7 +5,8 @@ const initailState={
     pages:[],
     token:Cookies.get("token")?JSON.parse(Cookies.get("token")):null,
     user:Cookies.get("user")?JSON.parse(Cookies.get("user")):null,
-    viewedCart:Cookies.get("viewedCart")?JSON.parse(Cookies.get("viewedCart")):[],
+    viewedCart:Cookies.get("viewedItems")?JSON.parse(Cookies.get("viewedItems")):[],
+    lovedItems:Cookies.get("lovedItems")?JSON.parse(Cookies.get("lovedItems")):[],
     cart:{
         cartItems:Cookies.get("items")?JSON.parse(Cookies.get("items")):[],
         shipping:Cookies.get("shipping")?JSON.parse(Cookies.get("shipping")):{},
@@ -24,9 +25,6 @@ function reducer(state,action){
           item.id===existItem.id?newItem:item
         ):[...state.cart.cartItems,newItem];
          Cookies.set("items",JSON.stringify(cartItems));
-         console.log("payload",action.payload)
-         console.log("state",state)
-         console.log("cart items",cartItems)
         return{...state,cart:{...state.cart,cartItems}}
       }
       case "REMOVE_FROM_CART":{
@@ -56,6 +54,7 @@ function reducer(state,action){
         Cookies.set("token",JSON.stringify(action.payload));
         return{...state,token:action.payload}
       }
+
       case "USER_LOGOUT":{
         Cookies.remove("token");
         Cookies.remove("user");
@@ -65,12 +64,26 @@ function reducer(state,action){
       }
       case "ADD_VIEWED_CARD":{
         const newItem=action.payload;        
-        const existItem=state.viewedCart.find(item=>item.slug===newItem.slug);
+        const existItem=state.viewedCart.find(item=>item.id===newItem.id);
         const viewedCart=existItem?state.viewedCart.map(item=>
-          item.slug===existItem.slug?newItem:item
+          item.id===existItem.id?newItem:item
         ):[...state.viewedCart,newItem];
-         Cookies.set("viewedCart",JSON.stringify(viewedCart));
+         Cookies.set("viewedItems",JSON.stringify(viewedCart));
         return{...state,viewedCart}
+      }
+      case "ADD_TO_LOVEDITEMS":{
+        const newItem=action.payload;        
+        const existItem=state.lovedItems.find(item=>item.id===newItem.id);
+        const lovedItems=existItem?state.lovedItems.map(item=>
+          item.id===existItem.id?newItem:item
+        ):[...state.lovedItems,newItem];
+         Cookies.set("lovedItems",JSON.stringify(lovedItems));
+        return{...state,lovedItems}
+      }
+      case "REMOVE_LOVED_PRODUCT":{
+        const lovedItems=state.lovedItems.filter(item=>item.id!==action.payload.id);
+        Cookies.set("items",JSON.stringify(lovedItems));
+        return{...state,lovedItems}
       }
       case "ADD_PAGES":{
         return{...state,pages:action.payload}

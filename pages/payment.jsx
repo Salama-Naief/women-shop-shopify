@@ -3,9 +3,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react'
-import Layout from '../components/Layout';
+import Layout from '../components/utils/Layout';
 import Stipper from '../components/payments/Stipper';
-import { API_URL } from '../utils/connectionConfig';
+import { API_URL } from '../utils/url';
 import {Store} from '../utils/Store' 
 
 

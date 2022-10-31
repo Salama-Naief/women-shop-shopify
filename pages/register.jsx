@@ -3,8 +3,8 @@ import Link from 'next/link';
 import React, { useState } from 'react'
 import {useTranslation} from "next-i18next";
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import Layout from '../components/Layout';
-import {API_URL} from "../utils/connectionConfig";
+import Layout from '../components/utils/Layout';
+import {API_URL} from "../utils/url";
 import { createCustomer } from '../lib/shopify';
 export default function Register({pages}) {
   const {t,i18n}= useTranslation();

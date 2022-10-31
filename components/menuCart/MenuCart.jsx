@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { MdOutlineClear } from "react-icons/md"
 import { Store } from '../../utils/Store';
 import { useTranslation } from "next-i18next"
-import { API_URL } from '../../utils/connectionConfig';
+import { API_URL } from '../../utils/url';
 import Image from 'next/image';
 import Cookies from 'js-cookie';
 import { createCheckout, updateCheckout } from '../../lib/shopify';
@@ -88,11 +88,11 @@ function MenuCart({setMenuCart}) {
                     
                     <div className="py-1 flex items-center text-sm">
                       <span className="mx-1 text-gray-400">color:</span>
-                      <span className="text-sm">{product.selectedOptions[1].value}</span>
+                      {product.selectedOptions[0]?<span className="text-sm">{product.selectedOptions[0].value}</span>:<span className="text-sm">varient color</span>}
                     </div>
                     <div className="py-1 flex items-center text-sm">
                       <span className="mx-1 text-gray-400">size:</span>
-                      <span className="">{product.selectedOptions[0].value}</span>
+                      {product.selectedOptions[1]?<span className="">{product.selectedOptions[1].value}</span>:<span className="">varient Size</span>}
                     </div>
                 </div>
                 <div className="justify-end flex flex-col items-end h-full">

@@ -3,7 +3,7 @@ import Slider from "react-slick";
 import {motion} from "framer-motion"
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import { API_URL } from "../../utils/connectionConfig";
+import { API_URL } from "../../utils/url";
 import { Offer } from "../../utils/Calc";
 import Image from "next/image";
 import dynamic from "next/dynamic";

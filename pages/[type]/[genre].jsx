@@ -3,15 +3,15 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useEffect, useRef, useState } from 'react';
 import {MdArrowBackIosNew,MdArrowForwardIos} from "react-icons/md"
 import {motion} from "framer-motion";
-import Layout from '../../components/Layout';
+import Layout from '../../components/utils/Layout';
 import ProductCard from "../../components/product/ProductCard";
-import { API_URL } from '../../utils/connectionConfig';
+import { API_URL } from '../../utils/url';
 import Loading from '../../components/loading/Loading';
 import { useTranslation } from 'next-i18next';
 import Image from 'next/image';
-import { getCollectionByHande } from '../../lib/shopify';
+import { getCollectionByHande, getPages, getProducts, getProductsType } from '../../lib/shopify';
 
- function Products({collection,errMsg,}){
+ function Products({collection,errMsg,pages,productsTypes,products}){
     const router=useRouter();
     const {t,i18n}=useTranslation();
     const [productItems,setproductItems]=useState(collection);
@@ -21,19 +21,22 @@ import { getCollectionByHande } from '../../lib/shopify';
     const [size,setSize]=useState("");
     const [category,setCategory]=useState("");
     const [color,setColor]=useState("");
-   // const [sizeArray,setSizeArray]=useState("");
-   // const [categoryArray,setCategoryArray]=useState("");
-   // const [colorArray,setColorArray]=useState("");
+    const [allProducts,setAllProducts]=useState([])
+    const [sizeArray,setSizeArray]=useState([]);
+    const [categoryArray,setCategoryArray]=useState([]);
+    const [colorArray,setColorArray]=useState([]);
     const [sideFilter,setSideFilter]=useState(false);
     const [loading,setLoading]=useState(true);
     const progres=useRef(); 
 
+
    
     //loading
     useEffect(()=>{
+        console.log("router",router)
         setLoading(false);
-        
-    },[])
+        setAllProducts(collection?collection.products.edges:products?products.edges:[])
+    },[collection,products])
 /*
     useEffect(()=>{
         setproductItems(products);
@@ -46,126 +49,169 @@ import { getCollectionByHande } from '../../lib/shopify';
 */
 
 
-    const colorArray=[];
-    const categoryArray=[];
-    const sizeArray=[];
+    const colorArr=[];
+    const categoryArr=[];
+    const sizeArr=[];
 
-    //useEffect(()=>{
-   //     console.log("products",collection)
-   // },[])
-  //  let miniPrice=0;
-   // let maxPrice=0;
-   /*products&&products.forEach(item=>{  
-        if(item.attributes.price>maxPrice){
-            //maxPrice=item.attributes.price
-            setMaxPrice(item.attributes.price)
-        } 
-        if(item.attributes.price<miniPrice&&miniPrice!==0){
-            //miniPrice=item.attributes.price
-            setMiniPrice(item.attributes.price)
-        }else if(miniPrice===0){
-            //miniPrice=item.attributes.price
-            setMiniPrice(item.attributes.price)
-        }
-        if(!colorArray.includes(i18n.language==="ar"?item.attributes.color_arabic:item.attributes.color)){
-            colorArray.push(i18n.language==="ar"?item.attributes.color_arabic:item.attributes.color)
-        }
-        if(!sizeArray.includes(item.attributes.size)){
-            sizeArray.push(i18n.language==="ar"?item.attributes.size:item.attributes.size)
-        }
-        if(!categoryArray.includes(i18n.language==="ar"?item.attributes.category.data?.attributes.name_arabic:item.attributes.category.data?.attributes.name)&&item.attributes.category.data){
-            categoryArray.push(i18n.language==="ar"?item.attributes.category.data?.attributes.name_arabic:item.attributes.category.data?.attributes.name)
-        }
-    })
-*/
-  /* useEffect(()=>{
+    useEffect(()=>{
       
-        setColorArray(colorArr);
-        setCategoryArray(categoryArr);
-        setSizeArray(sizeArr);
-        setMaxPrice(maxPrice)
-        setMiniPrice(miniPrice)
-    },[products,price])*/
+      setPrice(miniPrice)
+    },[miniPrice])
+    //let miniPrice=0;
+   // let maxPrice=0; 
+useEffect(()=>{
+        let miniP=0;
+        let maxP=0;
+        console.log("products",allProducts)
+     allProducts.length>0&&allProducts.forEach(item=>{  
+          if(parseInt(item.node.variants.edges[0].node.priceV2.amount)>maxP){
+            //maxPrice=item.attributes.price
+            maxP=(parseInt(item.node.variants.edges[0].node.priceV2.amount))
+        } 
+        if(parseInt(item.node.variants.edges[0].node.priceV2.amount)<miniP&&miniP!==0){
+            //miniPrice=item.attributes.price
+            miniP=(parseInt(item.node.variants.edges[0].node.priceV2.amount))
+        }else if(miniP===0){
+            //miniPrice=item.node.variants.edges[0].price
+            miniP=(parseInt(item.node.variants.edges[0].node.priceV2.amount))
+        }
+        if(!colorArr.includes(item.node.variants.edges[0].node.selectedOptions[0].value)){
+            colorArr.push(item.node.variants.edges[0].node.selectedOptions[0].value)
+        }
+        if(item.node.variants.edges[0].node.selectedOptions.length>=2){
+            if(!sizeArr.includes(item.node.variants.edges[0].node.selectedOptions[1].value)){
+            sizeArr.push(item.node.variants.edges[0].node.selectedOptions[1].value)
+        }
+        }
+        
+       if(!categoryArr.includes(item.node.productType)){
+            categoryArr.push(item.node.productType)
+        }
+    })
+
+    setCategoryArray([...categoryArr])
+    setSizeArray([...sizeArr])
+    setColorArray([...colorArr])
+    setMaxPrice(maxP)
+    setMiniPrice(miniP)
+},[allProducts])
+  
 
 
-
-   
-   const handleFliter=(type)=>{
-    const items=[];
-   setSideFilter(false)
-    if(type==="price"){
-        setCategory('')
-        setSize('')
-        setColor("")
-    }else if(type==="size"){
-        setCategory('')
-        setPrice(maxPrice)
-        setColor("")
-    }else if(type==="category"){
-        setColor('')
-        setSize('')
-        setPrice(maxPrice)
-    }else if(type==="color"){
-        setCategory('')
-        setSize('')
-        setPrice(maxPrice)
+const handleFilterPrice=()=>{
+    const items=[]
+    allProducts.forEach(item=>{
+        if(parseInt(item.node.variants.edges[0].node.priceV2.amount)<price){
+           items.push(item)
+        }
+    })
+    if(items.length>0){
+        setAllProducts(items)
     }
-    products.forEach(item=>{
-        if(type==="price"&&item.attributes.price<=price){
-            items.push(item)
-        }else if(type==="size"&&item.attributes.size===size){
-            items.push(item)
-        }else if(type==="category"&&item.attributes.category.data?.attributes.name===category&&item.attributes.category.data){
-            items.push(item)
-        }else if(type==="color"&&item.attributes.color===color){
-            items.push(item)
-        }
-    })
-    setproductItems(items)
-   }
+}
 
+//handle filter category
+const handleFilterCategory=()=>{
+    const items=[]
+    if(category==="allCategory"){
+        setAllProducts(collection?collection.products.edges:products?products.edges:[])
+        setColor("")
+        setSize("")
+        setCategory("")
+    }else{
+        allProducts.forEach(item=>{
+                if(item.node.productType===category){
+                items.push(item)
+                }
+        })
+    }
+   
+    if(items.length>0){
+        setAllProducts(items)
+        setColor("")
+        setSize("")
+    }
+}
 
-   const handleAllFliters=()=>{
-    const items=[];
-    setSideFilter(false)
-    products&&products.forEach(item=>{
-        if(item.attributes.price<=price&&
-            item.attributes.size===size&&
-            item.attributes.color===color &&
-            item.attributes.category.data?.attributes.name===category&&
-            item.attributes.category.data){
-            items.push(item)
-        }
-    })
-    setproductItems(items)
-   }
+///handle filter color 
+const handleFilterColor=()=>{
+    const items=[]
+    if(color==="allColor"){
+        setAllProducts(collection.products?collection.products.edges:products?products.edges:[])
+        setColor("")
+        setSize("")
+        setCategory("")
+    }else{
+        allProducts.forEach(item=>{
+                if(item.node.variants.edges[0].node.selectedOptions[0].value===color&&item.node.variants.edges[0].node.selectedOptions[0]){
+                items.push(item)
+                }
+        })
+
+    }
+   
+    if(items.length>0){
+        setAllProducts(items)
+        setSize("")
+        setCategory("")
+    }
+}
+
+//handle filter size
+const handleFilterSize=()=>{
+    const items=[]
+    console.log("handle",size)
+    if(size==="allSize"){
+        
+        setAllProducts(collection.products?collection.products.edges:products?products.edges:[])
+        setColor("")
+        setSize("")
+        setCategory("")
+    }else{
+        allProducts.forEach(item=>{
+                if(item.node.variants.edges[0].node.selectedOptions[1].value===size&&item.node.variants.edges[0].node.selectedOptions[1]){
+                items.push(item)
+                }
+        })
+    }
+   
+    if(items.length>0){
+        setAllProducts(items)
+        setColor("")
+        setCategory("")
+    }
+}
+   
 
 //check data frist
    if(errMsg){
     return(
-      <Layout>
+      <Layout title={"error"} pages={pages}>
         <div className='text-3xl w-full h-screen flex justify-center items-center text-secondary'><div>No Data Found</div></div>  
     </Layout>
     )
   }
 
- 
-
-        if(loading){
-        return(
-            <Layout title="products pages" pages={[]}>
-                <Loading/>
-            </Layout>
-        )
-        }
+    if(loading){
     return(
-        <Layout title="products pages" pages={[]}>
+        <Layout title="products pages" pages={pages}>
+            <Loading/>
+        </Layout>
+    )
+    }
+    return(
+        <Layout title="products pages" productsTypes={productsTypes} pages={pages}>
             <div className='relative'>
                 <div className='overflow-hidden block w-full h-72'>
+                    {(collection&&collection.image)?
                     <Image src={collection.image.url} layout='responsive' objectPosition={"center"} width={32} height={16} loading="eager" alt=''/>
+                    :
+                    <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/product.jpg?v=1664033984"} layout='responsive' objectPosition={"center"} width={32} height={16} loading="eager" alt=''/>
+                    }
                 </div>
                 <div className='absolute top-1/3 left-1/2 text-primary'>
-                    <h1 className='text-3xl font-bold capitalize w-full text-center my-8'>{collection.title}</h1>
+                    {collection&&<h1 className='text-3xl font-bold capitalize w-full text-center my-8'>{collection.title.replace(/banner/g, "").replace(/bottomSection/g, "").replace(/topSection/g, "")}</h1>}
+                    {router.query.type==="products"&&<h1 className='text-3xl font-bold capitalize w-full text-center my-8'>{router.query.genre}</h1>}
                 </div>
             </div>
             
@@ -176,10 +222,10 @@ import { getCollectionByHande } from '../../lib/shopify';
                
                <div className="flex relative">
                
-                    <div className="flex flex-wrap w-full md:w-3/4">
+                    <div className="flex flex-wrap w-full md:w-3/4 mt-4">
                         {
-                           collection.products.edges? collection.products.edges.map(product=>(
-                                <div key={product.node.id} className='w-full md:w-1/3 my-4'>
+                           allProducts.length>0?allProducts.map(product=>(
+                                <div key={product.node.id} className='w-1/2 md:w-1/3 mb-4'>
                                 <ProductCard id={product.node.id} product={product.node}/>
                             </div>
                             )):(
@@ -206,7 +252,7 @@ import { getCollectionByHande } from '../../lib/shopify';
                                 </div>
                                 <div className='p-1 border mx-1'>${maxPrice}</div>
                             </div>
-                            <button onClick={()=>handleFliter("price")} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
+                            <button onClick={()=>handleFilterPrice()} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
                             </div>
                             
                         
@@ -218,11 +264,11 @@ import { getCollectionByHande } from '../../lib/shopify';
                             {
                             categoryArray.map((categoryVal,index)=>(   
                                 <label key={index} className=" block my-2">
-                                    <input type="radio" value={categoryVal} checked={category===categoryVal?category:""} name={categoryVal}  onChange={(e)=>setCategory(e.target.value)} /> <span className='text-lg'>{categoryVal}</span>
+                                    <input type="radio" value={categoryVal} checked={category===categoryVal?category:""} name={categoryVal}  onChange={(e)=>setCategory(e.target.value)} /> <span className='text-lg'>{categoryVal.toLowerCase()}</span>
                                 </label>
                             ))
                         }
-                        <button onClick={()=>handleFliter("category")} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
+                        <button onClick={()=>handleFilterCategory()} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
                         </div>
                     
                         <div className="px-4">
@@ -237,7 +283,7 @@ import { getCollectionByHande } from '../../lib/shopify';
                                 </label>
                             ))
                         }
-                        <button onClick={()=>handleFliter("size")} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
+                        <button onClick={()=>handleFilterSize()} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
                         </div>
                     
                             <div className="px-4">
@@ -253,13 +299,9 @@ import { getCollectionByHande } from '../../lib/shopify';
                                 ))
                             }
                         
-                        <button onClick={()=>handleFliter("color")} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
+                        <button onClick={()=>handleFilterColor()} className='my-4 transition ease-in-out delay-0 duration-500 border border-primary bg-white text-gray-900 hover:bg-primary py-1 px-8 hover:text-white'>{t("common:filter")}</button>
                         </div>
 
-                        <div className="my-4">
-                        <div className='text-lg font-semibold py-4'>{t("common:filter")} <span className='text-base font-normal'>{t("common:all_fliters")}</span></div>
-                        <button onClick={()=>handleAllFliters()} className='bg-primary text-white  py-1 px-8 w-full'>{t("common:filter_by_all")}</button>
-                        </div>
                     </div>
                 </div>
                           
@@ -337,22 +379,38 @@ import { getCollectionByHande } from '../../lib/shopify';
 
 export async function getServerSideProps(ctx) {
 
+    const locale=ctx.locale;
     try{
-        const {genre} =ctx.params;
-        const locale=ctx.locale;
-        const collection=await getCollectionByHande(genre,20,locale)
-        
+        const {genre,type} =ctx.params;
+        let products=[];
+        let collection=null;
+        if(type==="products"){
+           products=await getProducts(genre,locale)
+        }else if(type==="collection"){
+            collection=await getCollectionByHande(genre,20,locale)
+        }
+
+        const pages=await getPages(locale)
+        const clothes=await getProductsType("clothes",locale)
+        const shoes=await getProductsType("shoes",locale)
+        const accessory=await getProductsType("accessories",locale)
+        console.log("coll==>",JSON.parse(collection))
             return {
             props: {
-                collection:JSON.parse(JSON.stringify(collection))||{},
+                collection:collection?JSON.parse(collection):null,
+                productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)},
+                products:products.length>0?JSON.parse(products):[],
+                pages:JSON.parse(pages)||[],
                 errMsg:false, 
                 ...(await serverSideTranslations(locale, ['common',"product"]))
             },
             }
     }catch(err){
+        console.log("error==>",err)
         return {
             props: {
-                errMsg:true
+                errMsg:true,
+                ...(await serverSideTranslations(locale, ['common',"product"]))
             },
         }
     }

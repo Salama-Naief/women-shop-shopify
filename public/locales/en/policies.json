@@ -1,0 +1,34 @@
+{
+    "policy":[
+        {
+            "title":"EXPRESS SHIPPING",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-1.webp?v=1664549219"
+        },
+        {
+            "title":"FREE SHIPPING",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-2.webp?v=1664549219"
+        },
+        {
+            "title":"MONEY BACK GUARANTEE",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-3.webp?v=1664549219"
+        },
+        {
+            "title":"30 DAYS RETURN",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-4.webp?v=1664549219"
+        },
+        {
+            "title":"PAYMENT SECURED",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-5.webp?v=1664549219"
+        },
+        {
+            "title":"FREE GIFT CARD",
+            "desc":"Lorem ipsum dolor sit amet consecte adipiscing elit pellentesque",
+            "imgUrl":"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/policy-6.webp?v=1664549219"
+        }
+    ]
+}

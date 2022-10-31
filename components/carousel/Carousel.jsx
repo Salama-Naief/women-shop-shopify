@@ -12,10 +12,19 @@ import dynamic from 'next/dynamic';
     const [movedis,setMoveDis]=useState(0);
     const [numItems,setSetNumItems]=useState(0);
     const [route,setRoute]=useState(null);
-
+    const [itemsLimit,setItemsLimit]=useState(0);
     const carousel=useRef();
     const carouselItem=useRef();
 
+    useEffect(()=>{
+      if(window.innerWidth<=480){
+        setItemsLimit(2)
+      }else if(window.innerWidth>480&&window.innerWidth<720){
+        setItemsLimit(3)
+      }else if(window.innerWidth>=720){
+       setItemsLimit(4)
+      }
+    },[itemsLimit,numItems])
 
   useEffect(()=>{
     if(type==="new"||type==="sales"||type==="popular"){
@@ -25,14 +34,17 @@ import dynamic from 'next/dynamic';
     }
  },[type,products,route])
 
-    const handleLeft=()=>{
-        if(products.length>4&&numItems>=0&&numItems<(products.length-4)){
-            setMoveDis(movedis+carouselItem.current.offsetWidth)
-            setSetNumItems(numItems+1)
+ //handle move to right
+  const handleRight=()=>{
+
+      if(products.length>itemsLimit&&numItems>=0&&numItems<(products.length-itemsLimit)){
+        setMoveDis(movedis+carouselItem.current.offsetWidth)
+        setSetNumItems(numItems+1)
         }
     }
-    const handleRight=()=>{
-        if(products.length>4&&numItems>0){
+  //handle move to left
+    const handleLeft=()=>{
+      if(products.length>itemsLimit&&numItems>0){
         setMoveDis(movedis-carouselItem.current.offsetWidth)
         setSetNumItems(numItems-1)
     }
@@ -40,31 +52,25 @@ import dynamic from 'next/dynamic';
   return (
     <div  className=' my-4 container mx-auto'>
         <div className="my-4 flex justify-center">
-          <div className=''>
             <div className="text-center w-full my-4">
               <div className="capitalize text-3xl ">{title?title:""}</div>
-              <Link href={`/products/${route}`}>
-                <a className="text-secondary text-lg my-4 capitalize">view All</a>
-              </Link>
-            </div>
-          </div>
-           
+            </div>    
         </div>
       <motion.div ref={carousel} className=" overflow-hidden relative">
       {
-            products.length>4&&<div onClick={()=>handleLeft()} className="absolute top-1/2 left-0 z-10 cursor-pointer">
+          <motion.div initial={{opacity:0,display:"none"}} animate={(numItems>0)?{opacity:1,display:"block"}:{opacity:0,display:"none"}} transition={{duration:0.5}} onClick={()=>handleLeft()} className="absolute top-1/2 left-0 z-10 cursor-pointer">
              <BsArrowLeft className='text-secondary text-4xl'/>
-          </div>
+          </motion.div>
           }
           {
-          products.length>4&&<div onClick={()=>handleRight()} className="absolute top-1/2 right-0 z-10 cursor-pointer">
+          <motion.div initial={{opacity:0,display:"none"}} animate={((products.length-itemsLimit)>numItems)?{opacity:1,display:"block"}:{opacity:0,display:"none"}} transition={{duration:0.5}} onClick={()=>handleRight()} className="absolute top-1/2 -right-0.5 z-10 cursor-pointer">
              <BsArrowRight className='text-secondary text-4xl'/>
-          </div>
+          </motion.div>
           }
-         <motion.div animate={{x:-movedis}} transition={{duration:0.5,type:"tween"}} className='flex'>
+         <motion.div animate={{x:-movedis}} transition={{duration:1,type:"tween"}} className='flex'>
         
           {products&&products.map((product,index)=>(
-              <div key={index} ref={carouselItem} className="md:w-1/4 w-full">
+              <div key={index} ref={carouselItem} className="md:w-1/3 lg:w-1/4 w-1/2">
                 <ProductCard key={product.id}  product={product.attributes?product.attributes:product}/>
               </div>
             ))}

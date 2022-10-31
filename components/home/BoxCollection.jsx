@@ -1,27 +1,27 @@
 
 import dynamic from 'next/dynamic';
 import CardBox from './CardBox'
- function BoxCollection({topCollection,bottomCollection}){
+ function BoxCollection({topSection,bottomSection}){
  
     return(
       <>
       {
-         topCollection&&<div className={`grid md:grid-cols-3 container mx-auto`}>
+         topSection&&<div className={`grid md:grid-cols-3 container mx-auto`}>
          {
-          topCollection.map((collection,index)=>(
-            <div key={index} className='col-span-1'>
-              <CardBox height="h-64 md:h-80" collection={collection.attributes}/>
+          topSection.edges.map((collection)=>(
+            <div key={collection.node.id} className='col-span-1'>
+              <CardBox height="h-40 md:h-80" collection={collection.node}/>
             </div>
           ))
          }
          </div>
       }
         {
-         bottomCollection&&<div className={`grid md:grid-cols-2 container mx-auto`}>
+         bottomSection&&<div className={`grid md:grid-cols-2 container mx-auto `}>
          {
-          bottomCollection.map((collection,index)=>(
-            <div key={index} className='col-span-1'>
-              <CardBox height="h-80 md:h-96" collection={collection.attributes}/>
+          bottomSection.edges.map((collection)=>(
+            <div key={collection.node.id} className='col-span-1'>
+              <CardBox height="h-80 md:h-96" collection={collection.node}/>
             </div>
           ))
          }

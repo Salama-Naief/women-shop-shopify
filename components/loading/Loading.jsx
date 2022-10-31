@@ -1,5 +1,5 @@
 import React from 'react'
-import ClipLoader from "react-spinners/ClipLoader";
+import ClipLoader from "react-spinners/RingLoader";
 
 
 
@@ -7,15 +7,14 @@ export default function Loading() {
   const override = {
     display: "block",
     margin: "0 auto",
-    borderColor: "D92D18",
-    color:"D92D18",
+    borderColor: "#E655B6",
     loading: true,
-    CircleLoader:90,
-    speedMultiplier: 1
+    CircleLoader:60,
+    speedMultiplier:1,
   };
   return (
-    <div className='text-3xl w-full h-screen flex justify-center items-center text-secondary'>
-        <ClipLoader color='#99750E' cssOverride={override}  size={50} />
+    <div className='w-full h-screen flex justify-center items-center'>
+        <ClipLoader color='#E655B6' cssOverride={override}  size={50} />
     </div>
   )
 }

@@ -18,5 +18,18 @@
     "new_items":"اجد النتجات",
     "sales_items":"اكبر العروض",
     "read_more":"اقرأ المزيد",
-    "ventor":"المنتج"
+    "ventor":"المنتج",
+    "name":"الاسم",
+    "email":"الايميل",
+    "message":"الرساله",
+    "your_review":"رأيك يهمنا:",
+    "wait":"انتظر...",
+    "send_message":"ارسل رسالتك",
+    "people_reviews":"أراء الناس",
+    "no_reviews":"لا توجد أراء",
+    "rate":"معدل أراء الناس:",
+    "comment_success_message":"رسالتك ارسلت بنجاح اعد تحيل الصفحة حني نري تعليقك",
+    "comment_error_message":"هناك شئ خاطئ حاول مرة ثانية",
+    "fill_all_fields":"أملا جميع الخانات",
+    "recent_viewed":"أخر ما شاهدت"
 }

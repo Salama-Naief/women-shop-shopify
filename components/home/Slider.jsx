@@ -30,18 +30,11 @@ function SampleNextArrow(props) {
 
 const [route,setRoute]=useState(null);
 const {t}=useTranslation();
-/*useEffect(()=>{
-  console.log("slider products",products)
-   if(type==="new"||type==="sales"||type==="popular"){
-    setRoute(`${type}-products`)
-   }else if(type==="related"||type==="recentViewed"){
-    setRoute(`all-${(products.length>0)&&(products[0].attributes?products[0].attributes.genre:products[0].genre)}`)
-   }
-},[type,products])*/
+
     const settings = {
       
         infinite: true,
-        slidesToShow: products.edges.length>4?4:products.edges.length,
+        slidesToShow:Array.isArray(products)?products.length>4?4:products.length:products.edges.length>4?4:products.edges.length,
         slidesToScroll: 1,
         autoplay: true,
         speed: 1000,
@@ -91,16 +84,26 @@ const {t}=useTranslation();
         <div className="relative my-10 font-serif container mx-auto ">
            <div className="text-center w-full my-4">
              <div className="capitalize text-2xl md:text-3xl ">{title?title:""}</div>
-             <Link href={`/products/${handle}`}>
+             <Link href={`/collection/${handle}`}>
               <a className="text-secondary text-lg my-4 capitalize">{t("product:view_all")}</a>
              </Link>
            </div>
            <Slider {...settings} className="">
-            {products.edges&&products.edges.map((product,index)=>(
+            {
+           products&&Array.isArray(products)?(
+              products.map((product,index)=>(
+                <div key={index} className="w-1/4">
+                  <ProductCard  id={product.id}  product={product}/>
+                </div>
+              ))
+            ):(
+              products.edges&&products.edges.map((product,index)=>(
               <div key={index} className="w-1/4">
                 <ProductCard  id={product.id}  product={product.node}/>
               </div>
-            ))}
+            ))
+            )
+           }
            </Slider>
 
         </div>
