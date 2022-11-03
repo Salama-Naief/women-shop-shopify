@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/utils/Layout';
 import { getPages, getProductsType, shopDetails, shopPolicy } from '../../lib/shopify';
 
-function Policy({errMsg,policy,pages,productsTypes}) {
+function Policy({errMsg,policy,pages}) {
   
   const [policyData,setPolicyData]=useState({});
   useEffect(()=>{
@@ -28,7 +28,7 @@ function Policy({errMsg,policy,pages,productsTypes}) {
 
   },[policy])
   return (
-    <Layout title={`policies-${policyData.title}`} productsTypes={productsTypes} pages={pages}>
+    <Layout title={`policies-${policyData.title}`} pages={pages}>
       <div className='container mx-auto my-8 flex justify-center'>
         {
           errMsg?(
@@ -72,14 +72,11 @@ export async function getStaticProps(ctx) {
 
     const policy=await shopPolicy(type,locale)
     const pages=await getPages(locale) 
-    const clothes=await getProductsType("clothes",locale)
-    const shoes=await getProductsType("shoes",locale)
-    const accessory=await getProductsType("accessory",locale) 
+
 
         return {
         props: {
             policy:JSON.parse(policy),
-            productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)},
            pages:JSON.parse(pages)||[],
             errMsg:false,
             ...(await serverSideTranslations(locale, ['common',"product"]))
