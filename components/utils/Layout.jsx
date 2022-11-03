@@ -16,8 +16,8 @@ export default function Layout({children,productsTypes,title,desc,pages}) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
         <main>
-           <HeadBar productTypes={productsTypes?productsTypes:{}} pages={pages.length>0?pages:[]}/>
-           <TopNavbar productTypes={productsTypes?productsTypes:{}} pages={pages.length>0?pages:[]}/>
+           <HeadBar productTypes={productsTypes?productsTypes:{}} pages={pages}/>
+           <TopNavbar productTypes={productsTypes?productsTypes:{}} pages={pages}/>
            <div>
             {children}
            </div>

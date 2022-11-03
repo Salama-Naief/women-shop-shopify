@@ -9,7 +9,7 @@ import { API_URL } from '../../utils/url';
 import Loading from '../../components/loading/Loading';
 import { useTranslation } from 'next-i18next';
 import Image from 'next/image';
-import { getCollectionByHande, getPages, getProducts, searchProducts } from '../../lib/shopify';
+import { collectionHandle, getCollectionByHande, getPages, getProducts, searchProducts } from '../../lib/shopify';
 
  function Products({collection,errMsg,pages,products}){
     const router=useRouter();
@@ -308,67 +308,6 @@ const handleFilterSize=()=>{
 }
 
 
-/*export async function getStaticPaths ({locales}){
-
-    try{
-        const pageRes = await fetch(`${API_URL}/api/pages`)
-            const pages = await pageRes.json()
-            const colectinRes = await fetch(`${API_URL}/api/colection-of-products`)
-            const colections = await colectinRes.json()
-            const categoryRes = await fetch(`${API_URL}/api/categories`)
-            const categories = await categoryRes.json()
-        const pageCollections=[];
-        const pageCategories=[];
-        const allItems=[];
-        const newItems=[];
-        const salesItems=[];
-        const popularItems=[];
-        const othePaths=[]
-        colections.data.map(collection=>{
-            locales.map(locale=>{
-                pageCollections.push({params:{genre:`collections-${collection.attributes.slug}`},locale})
-            })
-        
-            })
-
-            categories.data.map(category=>{
-                locales.map(locale=>{
-                    pageCategories.push({params:{genre:`category-${category.attributes.slug}`},locale})
-                })
-            })
-
-        pages.data.map(page=>{
-            locales.map(locale=>{
-                allItems.push({params:{genre:`all-${page.attributes.slug}`},locale})
-                newItems.push({params:{genre:`new-${page.attributes.slug}`},locale})
-                salesItems.push({params:{genre:`sales-${page.attributes.slug}`},locale})
-                salesItems.push({params:{genre:`popular-${page.attributes.slug}`},locale})
-            })
-           
-            })
-
-            locales.map(locale=>{
-                othePaths.push({params:{genre:`popular-products`},locale})
-                othePaths.push({params:{genre:`new-products`},locale})
-                othePaths.push({params:{genre:`sales-products`},locale})
-                othePaths.push({params:{genre:`collection-products`},locale})
-            })
-            
-            const paths=[...pageCollections,...pageCategories,...allItems,...newItems,...salesItems,...popularItems,...othePaths]
-
-            return{
-                paths,
-                fallback:false
-            }
-    }catch(err){
-        return{
-            paths:[],
-            fallback:false
-        }
-    }
-   
-    
-}*/
 
 export async function getServerSideProps(ctx) {
 
@@ -390,7 +329,7 @@ export async function getServerSideProps(ctx) {
             props: {
                 collection:collection?JSON.parse(collection):null,
                 products:products.length>0?JSON.parse(products):[],
-                pages:JSON.parse(pages)||[],
+                pages:pages?JSON.parse(pages):[],
                 errMsg:false, 
                 ...(await serverSideTranslations(locale, ['common',"product"]))
             },

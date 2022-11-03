@@ -3,7 +3,7 @@ import { MdOutlineFavorite, MdOutlineFavoriteBorder ,MdOutlineWifiCalling3} from
 import {TbTruckReturn,TbTruckDelivery} from 'react-icons/tb'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Link from 'next/link';
-import {createCheckout, getPages, getProductByHande, getProductRecommended, updateCheckout} from '../../lib/shopify';
+import {createCheckout, getPages, getProductByHande, getProductRecommended, getProducts, getProductsHandle, products, updateCheckout} from '../../lib/shopify';
 
 import SingleProductSliders from '../../components/product/SingleProductSlider';
 import Slider from "../../components/home/Slider";
@@ -26,7 +26,7 @@ import SetStars from '../../components/utils/SetStars';
 import SmallLoader from '../../components/loading/SmallLoader';
 
 
- function SingleProduct ({product,commentsData,rateData,errMsg,pages}){
+ function SingleProduct ({product,commentsData,recomendedProducts,rateData,errMsg,pages}){
     const {state,dispatch}=useContext(Store);
     const {viewedCart}=state;
     const router =useRouter();
@@ -60,7 +60,7 @@ import SmallLoader from '../../components/loading/SmallLoader';
   const email=useRef();
   const message=useRef();
 
-  
+  console.log("pages",pages)
       useEffect(()=>{
         router.push({pathname,query},asPath,{locale:i18n.language})
       },[i18n.language])
@@ -125,16 +125,9 @@ const handleChangeVarients=(type,value)=>{
 }
    //getRecomended products
    useEffect(()=>{
-   const productRecomended=async()=>{
-    if(product.id){
-        const data=await getProductRecommended(product.id,i18n.language)
-        if(data.length>0){
-            setProductRecommended(JSON.parse(data))
-        }
-    }
-   } 
-   productRecomended();
-   },[product.id])
+        setProductRecommended(recomendedProducts)
+
+   },[recomendedProducts])
 
 
    
@@ -453,20 +446,20 @@ useEffect(()=>{
     )
 }
 
-/*export async function getStaticPaths ({locales}){
-    const res = await fetch(`${API_URL}/api/products`)
-    const data = await res.json()
+export async function getStaticPaths ({locales}){
+    const productsRes= await getProductsHandle()
+    const products=JSON.parse(productsRes)
    const paths=[]
-   data.data.map(product=>{
-          paths.push({params:{slug:product.attributes.slug},locale:locales[1]},{params:{slug:product.attributes.slug},locale:locales[0]})
+   products.edges.map(product=>{
+          paths.push({params:{slug:product.node.handle},locale:locales[1]},{params:{slug:product.node.handle},locale:locales[0]})
     })
 
     return{
         paths,
         fallback:false
     }
-}*/
-export async function getServerSideProps(ctx) {
+}
+export async function getStaticProps(ctx) {
     const URL = `${API_URL}/getComments`
     const rateURL = `${API_URL}/getRate`
      const options=(url,productId)=>{
@@ -489,24 +482,28 @@ export async function getServerSideProps(ctx) {
     const pages=await getPages(locale)
     const product= await getProductByHande(slug,locale)  
  
-
+   
     // get comments and rates
     let comments="";
     let rate="";
-    if(product){
+    let recommendedProducts=[]
+    if(JSON.parse(product)){
         const id=JSON.parse(product).id
         const commentRes = await fetch(URL, options(URL,id))
         comments=await commentRes.json();
         const rateRes = await fetch(rateURL, options(rateURL,id))
         rate=await rateRes.json();
+
+        recommendedProducts=await getProductRecommended(id,locale)
     }
-   
+
 
         const  ratedValueSplit=rate.product.metafields.edges[0]?rate.product.metafields.edges[0].node.value.split("-"):""
         return {
         props: {
-           product:JSON.parse(product)||[],
-           pages:JSON.parse(pages)||[],
+           product:product?JSON.parse(product):{},
+           pages:pages?JSON.parse(pages):[],
+            recomendedProducts:recommendedProducts?JSON.parse(recommendedProducts):[],
            commentsData:comments?comments.product.metafields.edges:[],
            rateData:rate.product.metafields.edges[0]?{rateId:rate.product.metafields.edges[0].node.id,rateValue:ratedValueSplit[0]?ratedValueSplit[0]:0,numOfPeopleRated:ratedValueSplit[1]?ratedValueSplit[1]:0}:null,
             errMsg:false,
@@ -514,6 +511,7 @@ export async function getServerSideProps(ctx) {
         },
         }
     }catch(err){
+        
         return {
             props: {
                errMsg:true
