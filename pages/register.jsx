@@ -5,7 +5,8 @@ import {useTranslation} from "next-i18next";
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Layout from '../components/utils/Layout';
 import {API_URL} from "../utils/url";
-import { createCustomer } from '../lib/shopify';
+import { createCustomer, getPages } from '../lib/shopify';
+import SmallLoader from '../components/loading/SmallLoader';
 export default function Register({pages}) {
   const {t,i18n}= useTranslation();
   const [email,setEmail]=useState("");
@@ -26,19 +27,30 @@ export default function Register({pages}) {
             email:email,
             password:password
          }
-        const user =await createCustomer(userInfo)
-        console.log("customer",user);
-        if(user.customer){
+         const url=`${API_URL}/register`
+         const options={
+    
+                  endpoint: url,
+                  method: "POST",
+                  headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ userInfo })
+       }
+             const res = await fetch(url, options)
+             const token=await res.json();
+        if(token.customerCreate.customer){
           setErrMsg("")
           setLoading(false)
           setUserActivate(true)
-        }else if(user.userErrors){
+        }else if(token.customerCreate.userErrors){
           setLoading(false)
           setUserActivate(false)
-          setErrMsg(user.userErrors[0].message)
+          setErrMsg(token.customerCreate.userErrors[0].message)
         }
           
-  
+        setLoading(false)
   }
   if(useractivate){
     return (
@@ -65,7 +77,7 @@ export default function Register({pages}) {
                 <input type="type" minLength={3} required onChange={(e)=>setLastName(e.target.value)} value={lastName} className="outline-none border border-gray-400 my-4 w-full px-4 py-2" placeholder={t("common:userName")}/>
                 <input type="email" required onChange={(e)=>setEmail(e.target.value)} value={email} className="outline-none border border-gray-400 my-4 w-full px-4 py-2" placeholder={t("common:email")}/>
                 <input type="password" minLength={8} required onChange={(e)=>setPassword(e.target.value)} value={password} className="outline-none border border-gray-400 my-4 w-full px-4 py-2" placeholder={t("common:password")}/>
-                <button disabled={loading} type="submit" className={`${loading?"cursor-wait":"cursor-pointer"} bg-primary py-2 w-full text-white uppercase`}>{loading?"laoding":t("common:register")}</button>
+                <button disabled={loading} type="submit" className={`${loading?"cursor-wait":"cursor-pointer"} text-xl bg-primary py-2 w-full text-white uppercase`}>{loading?<SmallLoader/>:t("common:register")}</button>
                 </form>
                 <div className="text-gray-900 my-4"><span>{t("already_have_account")}?</span><Link href="/login"><a><span className="text-secondary cursor-pointer mx-1">{t("common:login")}</span></a></Link></div>
               </div>
@@ -77,17 +89,19 @@ export default function Register({pages}) {
 export async function getStaticProps({locale}) {
   try{
 
-     return {
-        props: {
+    const pages=await getPages(locale)
+    return {
+       props: {
+          pages:JSON.parse(pages)||[],
           errMsg:false,
-          ...(await serverSideTranslations(locale, ['common']))
+          ...(await serverSideTranslations(locale, ['common',"product"]))
         }
       }
   }catch(e){
      return {
         props: {
           errMsg:true,
-          ...(await serverSideTranslations(locale, ['common']))
+          ...(await serverSideTranslations(locale, ['common',"product"]))
         }
       }
   }

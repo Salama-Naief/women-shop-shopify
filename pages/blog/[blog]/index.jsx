@@ -4,28 +4,35 @@ import Image from 'next/image';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useEffect } from 'react';
 import { MdOutlineMail,MdOutlineDateRange,MdPersonOutline } from 'react-icons/md';
-import { getArticles, getBlogArticles, getBlogs, getPages, getProductsType } from '../../../lib/shopify';
+import { getArticles, getBlogArticles, getPages } from '../../../lib/shopify';
 import Layout from '../../../components/utils/Layout';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 
 
-function Index({pages,blogArticles,articles,productsTypes,errMsg}) {
+function Index({pages,blogArticles,articles,errMsg}) {
 const router=useRouter()
-const {handle}=router.query
+const {blog}=router.query
+const {pathname,query,asPath}=router;
+const {t,i18n}= useTranslation();
 
+
+useEffect(()=>{
+  router.push({pathname,query},asPath,{locale:i18n.language})
+ },[i18n.language])
 
   if(errMsg){
     return(
-      <Layout title={`blog-error`} desc="blog articles" productsTypes={productsTypes} pages={pages}>
+      <Layout title={`blog-error`} desc="blog articles" pages={pages}>
       <div>error</div>
     </Layout>
     )
   }
   return (
-    <Layout title={`blog-${handle?handle:""}`} desc="blog articles" productsTypes={productsTypes} pages={pages}>
+    <Layout title={`blog-${blog?blog:""}`} desc="blog articles" pages={pages}>
       <div className='w-full h-48 md:h-96 relative'>
         <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/hero.webp?v=1663940666"} layout="fill" objectFit='cover' objectPosition={"center"} alt=''/>
-          <h1 className="absolute top-1/3 md:top-1/2 text-6xl text-secondary left-1/3 md:left-1/2"><Link href={`/blog/${handle}`}><a>{handle?handle:"blog"}</a></Link></h1>
+          <h1 className="absolute top-1/3 md:top-1/2 text-6xl text-secondary left-1/3 md:left-1/2"><Link href={`/blog/${blog}`}><a>{blog?blog:"blog"}</a></Link></h1>
           <hr/>
         </div>
      <div className="container mx-auto my-8">
@@ -37,7 +44,7 @@ const {handle}=router.query
                 <div key={index} className="md:w-1/3 w-full  mb-2">
                   <div className="mx-2 border">
                   <div className="relative w-full h-48 cursor-pointer">
-                  <Link href={`/blog/${handle}/${article.node.handle}`}>
+                  <Link href={`/blog/${blog}/${article.node.handle}`}>
                     <Image src={article.node.image.url} layout="fill" objectFit='cover' objectPosition={"center"} alt=''/>
                   </Link>
                   </div>
@@ -49,7 +56,7 @@ const {handle}=router.query
                     
                   </div>
                   <div className="w-full text-center my-2">
-                       <h1 className='text-xl'><Link href={`/blog/${handle}/${article.node.handle}`}><a>{article.node.title}</a></Link></h1>
+                       <h1 className='text-xl'><Link href={`/blog/${blog}/${article.node.handle}`}><a>{article.node.title}</a></Link></h1>
                     </div>
                   <div className="px-4 ">
                   <p className=' text-clip overflow-clip h-24'>{article.node.excerpt}</p>
@@ -60,13 +67,13 @@ const {handle}=router.query
                 </div>
               )):(
                 <div className="h-full w-full justify-center items-center">
-                  <h1 className='text-primary capitalize text-xl text-center'> no articles here</h1>
+                  <h1 className='text-primary capitalize text-xl text-center'> {t("blog:no_articles_here")}</h1>
                 </div>
               )
             }
           </div>
           <div className="col-span-1 border p-2 flex md:block flex-wrap">
-          <h1 className='my-4 w-full text-center text-2xl'>Recent Articles</h1>
+          <h1 className='my-4 w-full text-center text-2xl'>{t("blog:recent_articles")}</h1>
             {articles&&articles.edges.map((article,index)=>(
               <div key={index} className="w-1/2 md:w-full  mb-2">
               <div className="mx-0.5 border">
@@ -95,49 +102,40 @@ const {handle}=router.query
 
 export async function getStaticPaths ({locales}){
   const paths=[]
-  try {
-    const res=await getBlogs();
-    const blogs=JSON.parse(res)
-    if(blogs){
-       blogs.edges.map(blog=>{
-        locales.map(locale=>{
-          paths.push({params:{handle:blog.node.title.toLowerCase()},locale})
+
+    const res=await getArticles("EN")
+    const articles=JSON.parse(res)
+    if(articles){
+        articles.edges.map(article=>{
+          locales.map(locale=>{
+          paths.push({params:{blog:article.node.blog.handle.toLowerCase()},locale})
         })
-      })
-    }else{
-      const paths=[{params:{handle:"news"},locale:locales[0]},{params:{handle:"news"},locale:locales[1]}]
+        })
     }
-  } catch (error) {
-    const paths=[{params:{handle:"news"},locale:locales[0]},{params:{handle:"news"},locale:locales[1]}]
-  }
-    
-  
 
     return{
         paths,
         fallback:false
     }
 }
+
 export const getStaticProps=async(ctx)=>{
-    const {handle} =ctx.params;
+    const {blog} =ctx.params
     const locale=ctx.locale;
     try{
-      const blogArticles=await getBlogArticles(handle,locale)
+      const blogArticles=await getBlogArticles(blog,locale)
       const articles=await getArticles(locale)
 
       const pages=await getPages(locale) 
-      const clothes=await getProductsType("clothes",locale)
-      const shoes=await getProductsType("shoes",locale)
-      const accessory=await getProductsType("accessory",locale)
+
 
       return{
         props:{
           blogArticles:JSON.parse(blogArticles)||{},
           articles:JSON.parse(articles)||{},
-          productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)}||[],
           pages:JSON.parse(pages)||[],
            errMsg:false,
-          ...(await serverSideTranslations(locale, ['common']))
+          ...(await serverSideTranslations(locale, ['blog',"product"]))
         }
       }
 
@@ -145,7 +143,7 @@ export const getStaticProps=async(ctx)=>{
         return{
             props:{
                 errMsg:true,
-                ...(await serverSideTranslations(locale, ['common']))
+                ...(await serverSideTranslations(locale, ['blog',"product"]))
             }
         }
     }

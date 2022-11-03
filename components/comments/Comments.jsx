@@ -78,7 +78,7 @@ const {t}=useTranslation();
       };
 
     return(
-        <div className="relative my-10 font-serif container mx-auto ">
+        <div className="relative my-10 container mx-auto ">
 
            <Slider {...settings} className="">
             {

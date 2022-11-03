@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import {motion} from "framer-motion"
 import {  MdOutlineDehaze, MdOutlinePersonOutline, 
 MdOutlineSearch, MdOutlineShoppingBasket,
-MdOutlineClear,MdChevronRight,MdKeyboardArrowDown
+MdOutlineClear
 } from "react-icons/md";
 import {HiOutlineShoppingCart} from "react-icons/hi";
 import {BsHeart} from "react-icons/bs";
@@ -19,8 +19,9 @@ import dynamic from "next/dynamic";
 import MenuCart from "../menuCart/MenuCart";
 import ItemState from "./ItemState";
 import MenuHeart from "../menuCart/MenuHeart";
+import axios from "axios";
 
-const HeadBar=({pages,productTypes})=>{
+const HeadBar=({pages})=>{
     const router =useRouter();
     const {state,dispatch} =useContext(Store);
     const pagesContent=pages.length>0?pages:state.pages
@@ -34,31 +35,31 @@ const HeadBar=({pages,productTypes})=>{
     const {t,i18n} =useTranslation();
     const [productsItems,setProductsItems]=useState([])
     const [typeQuery,setTypeQuery]=useState(null);
-
+    const [searchProducts,setSearchProducts]=useState(null);
+    const [search,setSearch]=useState("");
     
+
     useEffect(()=>{
-
-      let clothesArray=[];
-      let accessoryArray=[];
-      let shoesArray=[];
-      productTypes&&productTypes.clothes&&productTypes.clothes.edges.map(clothes=>{
-         if(!clothesArray.includes(clothes.node.productType)){
-          clothesArray.push(clothes.node.productType)
-         }
-      })
-      productTypes&&productTypes.shoes&&productTypes.shoes.edges.map(shoe=>{
-        if(!shoesArray.includes(shoe.node.vendor)){
-          shoesArray.push(shoe.node.vendor)
+    const funSearch=async()=>{
+      if(search){
+         if(search.length>=3){
+        const url=`${API_URL}/searchProduct`
+        const res = await axios.post(url, { search,locale:i18n.language })
+        const products=res.data
+        if(products){
+          setSearchProducts(products)
+        }else{
+          setSearchProducts(null)
         }
-     })
-     productTypes&&productTypes.accessory&&productTypes.accessory.edges.map(accessory=>{
-      if(!accessoryArray.includes(accessory.node.productType)){
-        accessoryArray.push(accessory.node.productType)
       }
-    })
-    setProductsItems([{type:"accessories",items:accessoryArray},{type:"clothes",items:clothesArray},{type:"shoes",items:shoesArray}])
-    
-     },[productTypes])
+      }else{
+        setSearchProducts(null)
+      }
+     
+      
+      }
+      funSearch();
+     },[search])
 
     useEffect(()=>{
       setCartProduct(state.cart.cartItems)
@@ -116,13 +117,48 @@ const handleChandeLang=(e)=>{
    
    }
 
+   const handleSearchSubmit=(e)=>{
+       e.preventDefault()
+       router.push(`/search/${search}`)
+   }
+
+
     return(
-            <div className="container sticky md:static top-0 z-30 md:z-0 w-full bg-white mx-auto flex items-center justify-between py-2 px-2 md:px-0 shadow-sm md:shadow-none font-serif"> 
-                  <div className="w-1/2 md:w-1/3 text-xl md:text-3xl font-serif text-gray-900 flex items-center " ><MdOutlineDehaze className="text-2xl cursor-pointer mx-2 md:hidden" onClick={()=>handleMenus('items')}/><Link href="/"><a>{t("common:siteName")}</a></Link> </div>
-                        <form className="hidden md:flex w-1/3 text-gray-900 border border-gray-400 items-center">
-                        <div className="flex items-center w-full">
-                            <input type="text" className="flex-grow outline-none px-1 py-0 text-sm md:text-base md:px-4 md:py-1" placeholder={t("common:search")}/>
-                            <MdOutlineSearch className="text-3xl cursor-pointer "/>
+            <div className="container sticky md:static top-0 z-30 md:z-0 w-full bg-white mx-auto flex items-center justify-between py-2 px-2 md:px-0 shadow-sm md:shadow-none "> 
+                  <div className="w-1/2 md:w-1/3 text-xl md:text-3xl  text-gray-900 flex items-center " >
+                    <MdOutlineDehaze className="text-2xl cursor-pointer mx-2 md:hidden" onClick={()=>handleMenus('items')}/>
+                    <Link href="/">
+                      <a>
+                      <div className="text-2xl lg:text-4xl uppercase "><span className="text-primary ">SA</span><span className="text-secondary">NI</span></div>
+                      </a>
+                    </Link> 
+                    </div>
+                        <form onSubmit={handleSearchSubmit} className="hidden md:flex w-1/3 text-gray-900 border border-gray-400 items-center">
+                          <div className="flex items-center w-full relative">
+                            <input onChange={(e)=>setSearch(e.target.value)} type="text" className="flex-grow outline-none px-1 py-0 text-sm md:text-base md:px-4 md:py-1" placeholder={t("common:search")}/>
+                            <MdOutlineSearch onClick={handleSearchSubmit} className="text-3xl cursor-pointer text-primary"/>
+                            {searchProducts&&<div className="absolute top-8  px-4 border border-gray-400 left-0 z-40 w-full max-h-screen bg-white overflow-y-auto overfow-x-0">
+                               <div className="relative">
+                               {searchProducts&&searchProducts.edges.length>0&&<div className={`${i18n.language==="ar"?"left-0":"right-0"} absolute top-0 text-xl md:text-xl  border border-secondary rounded-full cursor-pointer`} onClick={()=>{setSearchProducts(null),setSearch(null)}}><MdOutlineClear/></div>}
+                                {
+                                   searchProducts&&searchProducts.edges.length>0?searchProducts.edges.map((p,index)=>(
+                                    <div key={p.node.id} className="flex items-center my-2">
+                                      <Link href={`/product/${p.node.handle}`} passHref>
+                                        <a className="flex items-center">
+                                          <div className="relative w-12 h-12">
+                                           <Image src={p.node.images.edges[0].node.url} layout="fill" objectFit="contain" objectPosition="center" alt={p.node.images.edges[0].node.id}/>
+                                          </div>
+                                          <div className="mx-2">{p.node.title}</div>
+                                        </a>
+                                      </Link>
+                                      
+                                    </div>
+                                  )):(
+                                    search&&<div className="py-4">no products matches</div>
+                                  )
+                                }
+                               </div>
+                            </div>}
                             </div>
                             </form>
                         <div className="w-1/2 md:w-1/3 flex  items-center">
@@ -174,7 +210,7 @@ const handleChandeLang=(e)=>{
               {/*small size menu*/}
           {
             <motion.div initial={{x:i18n.language==="ar"?400:-400,display:"none"}} animate={menuItems?{x:0,display:"block"}:{display:"none"}} transition={{duration:0.2,type:"just"}} className={`${i18n.language==="ar"?"right-0":"left-0"} z-50 md:hidden bg-white text-gray-900 fixed bottom-0 w-5/6 md:w-1/3 md:h-5/6 border border-gray-400 px-8 h-screen overflow-y-auto overflow-x-hidden `}>
-              <div className={`${i18n.language==="ar"?"left-5":"right-5"} absolute top-5  text-xl md:text-2xl p-0.5 md:p-1 border border-secondary rounded-full cursor-pointer`} onClick={()=>closeMenus()}><MdOutlineClear/></div>
+              <div className={`${i18n.language==="ar"?"left-2":"right-5"} absolute top-5  text-xl md:text-2xl p-0.5 md:p-1 border border-secondary rounded-full cursor-pointer`} onClick={()=>closeMenus()}><MdOutlineClear/></div>
               <div className="text-gray-900 text-xl md:text-3xl w-full text-center my-6 capitalize">{t("common:menu")}</div>
               <div className="flex justify-center items-center mx-1">
                 {user?(
@@ -204,113 +240,65 @@ const handleChandeLang=(e)=>{
                     )
                 }
               </div>
-                <form className="my-4 text-gray-900 border border-gray-400 flex items-center">
-                  <div className="flex items-center">
-                    <input type="text" className="flex-grow-1 outline-none  w-full px-4 py-2" placeholder={t("common:search")}/>
-                    <MdOutlineSearch className="text-3xl cursor-pointer"/>
-                  </div>
-                </form>
-            <div className=" text-base ">
-             {pages.map(page=>(
-                <div key={page.id} className="px-4 my-4 relative py-1.5 border">
-                  <div className="w-full flex justify-between font-semibold capitalize">
-                     <Link href={`${page.title=="Home"?"/":`/products/${page.handle}`}`}><a><span className="font-bold cursor-pointer">{page.title}</span></a></Link>
-                     <div>
-                     <motion.span initial={{display:"block"}} animate={pageItems===page.title?{display:"none"}:{display:"block"}}  onClick={()=>setPageItems(pageItems!==page.title?page.title:'')}><MdChevronRight className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
-                     <motion.span initial={{display:"none"}} animate={pageItems===page.title?{display:"block"}:{display:"none"}}  onClick={()=>setPageItems('')}><MdKeyboardArrowDown className="text-2xl text-gray-400 mx-1 cursor-pointer"/></motion.span> 
-                     </div>
-                  </div>
-                  {page.title.toLowerCase()==="blog"&&<motion.div
-                            initial={{opacity:0,display:"none"}}
-                             animate={(pageItems===page.title)?{display:"block",opacity:1}:{display:"none",opacity:0}}
-                            className={`${i18n.language==="ar"?"right-0":"left-0"} whitespace-nowrap h-fit bg-white w-fit z-30`}>
-                               {page.items.length>0&&<div className="flex-grow capitalize text-gray-900 p-1 w-fit mx-2">
-                                  {
-                                    page.items.map(item=>(
-                                      item.type==="BLOG"&&<Link key={item.id} href={`/blog/${item.title.toLowerCase()}`}>
-                                        <a className="flex items-center">
-                                          <div className={`${typeQuery&&(typeQuery===item.title?"bg-secondary text-white":"bg-white text-gray-600 ")} text-sm  px-2 w-fit py-1 transition ease-in-out duration-400 hover:bg-secondary hover:text-white`}>
-                                            {item.title}
-                                          </div>
-                                          </a>
-                                        </Link>
-                                      ))  
-                                  }
-                                    </div>
-                                 }
-                            </motion.div>
-                    }
-                  {
-                   page.title.toLowerCase()!=="home"&&page.title.toLowerCase()!=="blog"&&<motion.div
-                            initial={{opacity:0,display:"none"}}
-                             animate={(pageItems===page.title)?{display:"block",opacity:1}:{display:"none",opacity:0}}
-                            className={`${i18n.language==="ar"?"right-0":"left-0"} whitespace-nowrap h-fit bg-white w-fit z-30 `}>
-                              <div className="">
+              <form onSubmit={handleSearchSubmit} className="hidden md:flex w-1/3 text-gray-900 border border-gray-400 items-center">
+                          <div className="flex items-center w-full relative">
+                            <input onChange={(e)=>setSearch(e.target.value)} type="text" className="flex-grow outline-none px-1 py-0 text-sm md:text-base md:px-4 md:py-1" placeholder={t("common:search")}/>
+                            <MdOutlineSearch onClick={handleSearchSubmit} className="text-3xl cursor-pointer text-primary"/>
+                            {searchProducts&&<div className="absolute top-8  px-4 border border-gray-400 left-0 z-40 w-full max-h-screen bg-white overflow-y-auto overfow-x-0">
+                               <div className="relative">
+                               {searchProducts&&searchProducts.edges.length>0&&<div className={`${i18n.language==="ar"?"left-0":"right-0"} absolute top-0 text-xl md:text-xl  border border-secondary rounded-full cursor-pointer`} onClick={()=>{setSearchProducts(null),setSearch(null)}}><MdOutlineClear/></div>}
                                 {
-                                  productsItems.map((product,index)=>(
-                                    page.title===product.type&&<div key={index} className="flex-grow capitalize h-fit text-gray-900 p-1 mx-2">
-                                    <div className="text-xl  font-md">{product.type==="clothes"&&"clothes type"||product.type==="shoes"&&"shoes ventor"||product.type==="accessories"&&"accessories type"}</div>
-                                    {
-                                      
-                                    product.items.map((item,index)=>(
-                                      <Link key={index} href={`/products/${item}`}><a><div className={`${typeQuery&&(typeQuery===item?"bg-secondary text-white":"bg-white text-gray-600 ")} px-2 test-sm lowercase py-1 transition ease-in-out  duration-600 hover:bg-secondary hover:text-white`}>{item}</div></a></Link>
-                                    ))
-
-                                    }
-                                  </div>
-                                  ))
-                                  
-                                   }
-                                {  
-                                 page.items.length>0&&<div className="px-2">
-                                   {/**الخط اللي بي الكولليكشن و النوع */}
-                                      <div className="h-0.5 w-full bg-gray-300"></div>
-                                    </div>
-                                }
-                                {page.items.length>0&&<div className="flex-grow capitalize text-gray-900 p-1 w-fit mx-2">
-                                <div className="text-xl  font-md">collections</div>
-                                  {
-                                    page.items.map(item=>(
-                                      item.type==="COLLECTION"&&<Link key={item.id} href={`/collection/${item.title.trim().replace(" ","-")}`}>
+                                   searchProducts&&searchProducts.edges.length>0?searchProducts.edges.map((p,index)=>(
+                                    <div key={p.node.id} className="flex items-center my-2">
+                                      <Link href={`/product/${p.node.handle}`} passHref>
                                         <a className="flex items-center">
-                                          <div className={`${typeQuery&&(typeQuery===item.title?"bg-secondary text-white":"bg-white text-gray-600 ")} text-sm  px-2 w-fit py-1 transition ease-in-out duration-400 hover:bg-secondary hover:text-white`}>
-                                            {item.title}
+                                          <div className="relative w-12 h-12">
+                                           <Image src={p.node.images.edges[0].node.url} layout="fill" objectFit="contain" objectPosition="center" alt={p.node.images.edges[0].node.id}/>
                                           </div>
-                                          {item.tags.length>0&&(item.tags[0].toLowerCase()==="new"&&<ItemState type="new"/>)}
-                                          {item.tags.length>0&&(item.tags[0].toLowerCase()==="saes"&&<ItemState type="sales"/>)}
-                                          </a>
-                                        </Link>
-                                      ))  
-                                  }
+                                          <div className="mx-2">{p.node.title}</div>
+                                        </a>
+                                      </Link>
+                                      
                                     </div>
-                                 }
-                          </div>
-                          </motion.div>
-                          }
-                   {/*
-                    page.attributes.name!=="home"&&<motion.div initial={{opacity:0,display:"none"}} animate={(pageItems===page.attributes.name)?{display:"block",opacity:1}:{display:"none",opacity:0}} className="">
-                           { page.attributes.newImg.data&&<Link href={`/products/new-${page.attributes.slug}`}><a><div className="min-h-fit w-full mx-2 relative my-2">
-                              <Image src={`${API_URL}${page.attributes.newImg.data.attributes.url}`} width={200} height={200} loading="eager" alt={page.attributes.offerImg.data.attributes.name} />
-                              <div className="font-semibold bg-gray-100 text-sm text-gray-900 absolute bottom-0 left-0 z-20 w-full text-center border border-secondary">{i18n.language==="ar"?page.attributes.newText_arabic:page.attributes.newText}</div>
+                                  )):(
+                                    search&&<div className="py-4">no products matches</div>
+                                  )
+                                }
+                               </div>
+                            </div>}
                             </div>
-                            </a></Link>
-                           }
-                           {page.attributes.offerImg.data&&<Link href={`/products/sales-${page.attributes.slug}`}><a> <div className="min-h-fit w-full mx-2 relative my-2">
-                              <Image src={`${API_URL}${page.attributes.offerImg.data.attributes.url}`} width={200} height={200} loading="eager" alt={page.attributes.offerImg.data.attributes.name}/>
-                              <div className="font-semibold bg-gray-100 text-sm text-gray-900 absolute bottom-0 left-0 z-20 w-full text-center border border-secondary">{i18n.language==="ar"?page.attributes.offerText_arabic:page.attributes.offerText}</div>
-                            </div>
-                            </a></Link>
-                           }
-                           {page.attributes.popularImg.data&&<Link href={`/products/popular-${page.attributes.slug}`}><a> <div className="min-h-fit w-full mx-2 relative my-2">
-                              <Image src={`${API_URL}${page.attributes.popularImg.data.attributes.url}`} width={200} height={200} loading="eager" alt={page.attributes.offerImg.data.attributes.name} />
-                              <div className="font-semibold bg-gray-100 text-sm text-gray-900 absolute bottom-0 left-0 z-20 w-full text-center border border-secondary">{i18n.language==="ar"?page.attributes.popularText_arabic:page.attributes.popularText}</div>
-                            </div>
-                            </a></Link>
-                           }
-                        </motion.div>
-                          */ }
-                </div>
-             ))}
+                            </form>
+            <div className="text-base ">
+            {
+                  pages.length>0&&pages.map((page,index)=>(
+                    <div key={index}  onMouseOver={()=>setHoverPage(page.node.title)} onMouseOut={()=>setHoverPage(null)}  className="relative">
+                      {
+                        page.node.handle==="home"?(
+                          <Link href={`/`}>
+                          <a>
+                            <div className="border my-2 px-4 py-1 text-xl font-meduim capitalize hover:bg-secondary hover:text-white">{page.node.title}</div>
+                          </a>
+                    </Link>
+                        ):
+                          page.node.handle==="blog"?(    
+                        <Link href={`/blog/news`}>
+                            <a>
+                              <div className="border my-2 px-4 py-1 text-xl font-meduim capitalize hover:bg-secondary hover:text-white">{page.node.title}</div>
+                            </a>
+                         </Link>
+                          ):(
+                            <Link href={`/products/${page.node.handle}`}>
+                            <a>
+                              <div className="border my-2 px-4 py-1 text-xl font-meduim capitalize hover:bg-secondary hover:text-white">{page.node.title}</div>
+                            </a>
+                         </Link>
+                          )
+                        
+                        
+                      }
+                     
+                      </div>
+              ))}
             </div>
           </motion.div>
           } 

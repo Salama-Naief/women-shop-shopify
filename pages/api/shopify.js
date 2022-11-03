@@ -31,8 +31,6 @@ async function ShopifyData(query) {
   export default async function handler(req, res) {
     const productId=req.body.productId
     const comment=req.body.comment
-    console.log("idddd==>",productId)
-    console.log("comment==>",req)
     try{
 
     
@@ -59,7 +57,6 @@ async function ShopifyData(query) {
         `
   
         const data=await ShopifyData(query)
-        console.log("data",data)
         res.status(200).json({product:data})
         
       

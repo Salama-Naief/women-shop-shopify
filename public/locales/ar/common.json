@@ -50,5 +50,8 @@
     "back":"للخلف",
     "payment":"الدفع",
     "order":"الطلب",
-    "beckend_error":"خطأ في الباك ايند"
+    "beckend_error":"خطأ في الباك ايند",
+    "show_now":"عرض الان",
+    "our_galary":"معرض الصور",
+    "location":"الموقع"
 }

@@ -25,7 +25,6 @@ const clientAdmin = new ApolloClient({
 
 export default async function handler(req, res) {
   const id=req.body.id
-  console.log("idddd==>",id)
   try {
   if(id){
 

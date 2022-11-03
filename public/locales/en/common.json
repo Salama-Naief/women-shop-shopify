@@ -50,6 +50,9 @@
     "back":"back",
     "payment":"payment",
     "order":"oreder",
-    "beckend_error":"error in backend connection"
+    "beckend_error":"error in backend connection",
+    "show_now":"show now",
+    "our_galary":"Our Galary",
+    "location":"location"
     
 }

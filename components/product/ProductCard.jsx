@@ -55,7 +55,7 @@ useEffect(()=>{
            {!product?( <div className="bg-gray-100 h-80  flex justify-center items-center border border-gray-400">
                 <div className="text-secondary">Looding..</div>
             </div>):(
-             <div onClick={()=>handleViewedCart()} className="relative h-fit border mx-1 font-serif" onMouseEnter={()=>setProductHover(true)} onMouseLeave={()=>setProductHover(false)}>
+             <div onClick={()=>handleViewedCart()} className="relative h-fit border mx-1" onMouseEnter={()=>setProductHover(true)} onMouseLeave={()=>setProductHover(false)}>
                 <ProductSliders productHover={productHover} title={product.title} variant={product.variants.edges[0].node} handle={product.handle} id={product.id} images={product.images.edges} rateValue={parseFloat(rateValue)} numOfPeopleRated={numOfPeopleRated}/>
                     <div className="px-4">
                         <div className="absolute left-1 top-1">

@@ -64,7 +64,6 @@ const  handler=async(req, res)=> {
       const data=await clientAdmin.mutate({
         mutation
       })
-      console.log("data",data)
       res.status(200).json(data.data.productUpdate)
       
     }

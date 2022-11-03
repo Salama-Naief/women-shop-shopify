@@ -31,6 +31,7 @@
     "comment_success_message":"your message sent succeffuly reload the page to see your review",
     "comment_error_message":"something wend wrong please try again",
     "fill_all_fields":"fill all fields",
-    "recent_viewed":"recent viewed"
+    "recent_viewed":"recent viewed",
+    "no_product_found":"no product found"
   
 }

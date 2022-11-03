@@ -8,14 +8,16 @@ import { useTranslation } from "next-i18next"
 import { API_URL } from '../../utils/url';
 import Image from 'next/image';
 import Cookies from 'js-cookie';
-import { createCheckout, updateCheckout } from '../../lib/shopify';
 import { useRouter } from 'next/router';
+import SmallLoader from '../loading/SmallLoader';
 
 function MenuCart({setMenuCart}) {
     const {state,dispatch}=useContext(Store);
     const router=useRouter();
     const {t,i18n}=useTranslation();
     const [cartProduct,setCartProduct]=useState([]);
+    const [loading,setLoading]=useState(false);
+    const [errMessage,setErrMessage]=useState("");
     useEffect(()=>{
         setCartProduct(state.cart.cartItems)
     },[state])
@@ -31,30 +33,45 @@ function MenuCart({setMenuCart}) {
 
     const handleCheckout= async ()=>{
       const checkoutId=Cookies.get("checkoutId")?JSON.parse(Cookies.get("checkoutId")):null
-      //const checkoutId=null
 
-       try{
         const data=[]
         state.cart.cartItems.length>0&&state.cart.cartItems.map(item=>{
 
-          data.push({id:item.id,variantQuantity:parseInt(item.quantity)})
+          data.push({id:item.id,variantQuantity:parseFloat(item.quantity)})
         })
-        console.log("state.cart.cartItems",data)
-           if(checkoutId){
-          
-               const res=  await updateCheckout(data,checkoutId) 
-               console.log("update checkout",res)
-               router.push(res.webUrl)
-           }else{
-               const data=[{id:varientData.id,variantQuantity:parseInt(qty)}]
-               const res=  await createCheckout(data) 
-               Cookies.set("checkoutId",JSON.stringify(res.id))
-               console.log("create checkout",res)
-               router.push(res.webUrl)
-           }
-       }catch(err){
-           console.log("check out err",err)
-       }
+
+           const url=`${API_URL}/checkout`
+           const options={
+
+                    endpoint: url,
+                    method: "POST",
+                    headers: {
+                      "Accept": "application/json",
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ data,checkoutId })
+         }
+         setLoading(true)
+         const res = await fetch(url, options)
+         const resData=await res.json();
+
+         if(resData.checkoutCreate&&resData.checkoutCreate.checkout){
+          Cookies.set("checkoutId",JSON.stringify(resData.checkoutCreate.checkout.id))
+          setLoading(false)
+          router.push(resData.checkoutLineItemsReplace.checkout.webUrl)
+         }else if(resData.checkoutLineItemsReplace&&resData.checkoutLineItemsReplace.checkout){
+          Cookies.set("checkoutId",JSON.stringify(resData.checkoutLineItemsReplace.checkout.id))
+          setLoading(false)
+          router.push(resData.checkoutLineItemsReplace.checkout.webUrl)
+         }else if(resData.checkoutUserErrors){
+           setErrMessage(resData.checkoutUserErrors[0].message)
+          setLoading(false)
+         }else if(resData.userErrors){
+          setErrMessage(resData.userErrors[0].message)
+          setLoading(false)
+         }
+        
+       
     }
   return (
     
@@ -80,18 +97,18 @@ function MenuCart({setMenuCart}) {
                   <Link href={`/product/${product.handle}`} passHref>
                     <a>
                       <div className="py-1 flex items-center text-sm">
-                        <span className="mx-1 text-gray-400">name:</span>
+                       
                         <span className="text-sm">{product.title}</span>
                       </div>
                     </a>
                   </Link>
                     
                     <div className="py-1 flex items-center text-sm">
-                      <span className="mx-1 text-gray-400">color:</span>
+                      <span className="mx-1 text-gray-400">{t("product:Color")}:</span>
                       {product.selectedOptions[0]?<span className="text-sm">{product.selectedOptions[0].value}</span>:<span className="text-sm">varient color</span>}
                     </div>
                     <div className="py-1 flex items-center text-sm">
-                      <span className="mx-1 text-gray-400">size:</span>
+                      <span className="mx-1 text-gray-400">{t("product:Size")}:</span>
                       {product.selectedOptions[1]?<span className="">{product.selectedOptions[1].value}</span>:<span className="">varient Size</span>}
                     </div>
                 </div>
@@ -108,7 +125,8 @@ function MenuCart({setMenuCart}) {
         </div>
        }
         <div className="flex justify-between px-4 text-gray-900 p-2 border border-gray-400 mt-6 mb-4"><div >{t("common:Subtotal")} <span className="text-secondary mx-0.5">({cartProduct.reduce((a,c)=>a+c.quantity,0)})</span>{t("common:items")}</div> <div>{t("common:total_Price")}:$<span className="text-secondary mx-0.5">{cartProduct.reduce((a,c)=>a+c.quantity*(c.priceV2.amount),0)}</span></div></div>
-          <button onClick={()=>handleCheckout()} className="bg-primary py-2 w-full text-white mb-4 uppercase">{t("common:chechout")}</button>
+        {errMessage&&<div className='text-red-600 text-center'>{errMessage}</div>}
+          <button disabled={loading} onClick={()=>handleCheckout()} className="bg-primary py-2 w-full text-white mb-4 uppercase">{loading?<SmallLoader/>:t("common:chechout")}</button>
         </motion.div>
       
   )

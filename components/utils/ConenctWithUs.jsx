@@ -11,7 +11,7 @@ export default function ConenctionWithUs (){
         e.preventDefault();
     }
     return(
-        <div className="w-full font-serif text-gray-900 bg-gray-200 md:flex justify-between p-4">
+        <div className="w-full text-gray-900 bg-gray-200 md:flex justify-between p-4">
             <div className="w-full md:w-1/3 px-2">
                 <div className="text-2xl my-4 capitalize mb-4"><span className="text-primary">SA</span><span className="text-secondary">NI</span></div>
                 <div className="flex items-center my-4">
@@ -19,7 +19,7 @@ export default function ConenctionWithUs (){
                         <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/contact_1.webp?v=1664723434"} layout="fill" objectFit="center" objectPosition={"center"} alt="phone"/>
                     </div>
                     <div className="mx-4">
-                    <div className="font-semibold">phone:</div>
+                    <div className="font-semibold">{t("common:phone")}:</div>
                     <div className="text-gray-600">01063723668</div>
                     </div>
                 </div>
@@ -28,7 +28,7 @@ export default function ConenctionWithUs (){
                         <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/contact_2_ft_150x_fe621070-bda6-4bc6-a122-6e5731ba582c.webp?v=1664723435"} layout="fill" objectFit="center" objectPosition={"center"} alt="location"/>
                     </div>
                     <div className="mx-4">
-                    <div className="font-semibold">location:</div>
+                    <div className="font-semibold">{t("common:location")}:</div>
                     <div className="text-gray-600">birelabid ,north sania ,egypt</div>
                     </div>
                 </div>
@@ -37,7 +37,7 @@ export default function ConenctionWithUs (){
                         <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/contact_3_ft_150x_d483c902-b0b2-428b-8267-2db3bcac315c.webp?v=1664723435"} layout="fill" objectFit="center" objectPosition={"center"} alt="email"/>
                     </div>
                     <div className="mx-4">
-                    <div className="font-semibold">email:</div>
+                    <div className="font-semibold">{t("common:email")}:</div>
                     <div className="text-gray-600">eng.salama.naief@gmail.com</div>
                     </div>
                 </div>
@@ -58,7 +58,7 @@ export default function ConenctionWithUs (){
                </div>
             </div>
             <div className="w-full md:w-1/3 ">
-                <div className="text-2xl my-4 capitalize">Our Galary</div>
+                <div className="text-2xl my-4 capitalize">{t("common:our_galary")}</div>
 
                 <div className="flex flex-wrap">
                     <div className="overflow-hidden w-1/3 h-28 relative p-1">

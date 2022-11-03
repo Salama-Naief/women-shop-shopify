@@ -7,13 +7,22 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MdOutlineMail,MdOutlineDateRange,MdPersonOutline } from 'react-icons/md';
+import { useTranslation } from 'next-i18next';
 
 
 function Index({pages,article,articles,productsTypes,errMsg}) {
 const router=useRouter()
-const {handle}=router.query
+const {pathname,query,asPath}=router;
+const {blog}=router.query
 
+const {t,i18n}= useTranslation();
+ 
 
+ 
+  
+useEffect(()=>{
+ router.push({pathname,query},asPath,{locale:i18n.language})
+},[i18n.language])
   if(errMsg){
     return(
       <Layout title={`blog-error`} desc="blog articles" productsTypes={productsTypes} pages={pages}>
@@ -22,10 +31,10 @@ const {handle}=router.query
     )
   }
   return (
-    <Layout title={`blog-${handle?handle:""}`} desc="blog articles" productsTypes={productsTypes} pages={pages}>
+    <Layout title={`blog-${blog?blog:""}`} desc="blog articles" productsTypes={productsTypes} pages={pages}>
       <div className='w-full h-48 md:h-96 relative'>
         <Image src={"https://cdn.shopify.com/s/files/1/0662/0371/3755/files/hero.webp?v=1663940666"} layout="fill" objectFit='cover' objectPosition={"center"} alt=''/>
-          <h1 className="absolute top-1/3 md:top-1/2 text-6xl text-secondary left-1/3 md:left-1/2"><Link href={`/blog/${handle}`}><a>{handle?handle:"blog"}</a></Link></h1>
+          <h1 className="absolute top-1/3 md:top-1/2 text-6xl text-secondary left-1/3 md:left-1/2"><Link href={`/blog/${blog}`}><a>{blog?blog:"blog"}</a></Link></h1>
           <hr/>
         </div>
      <div className="container mx-auto my-8">
@@ -60,7 +69,7 @@ const {handle}=router.query
                 <div className="my-4 p-2 w-full px-4">
                  {article.comments.edges.length>0&&<>
                  
-                  <h1 className='text-2xl my-4'>Commetes</h1>
+                  <h1 className='text-2xl my-4'>{t("blog:commetes")}</h1>
                   <hr className='my-2'/>
                  </>
                   }
@@ -69,10 +78,10 @@ const {handle}=router.query
                       <div key={comment.node.id} className="w-full p-4 border ">
                         <div className="py-4">
                           <div className="flex justify-between">
-                            <div className='flex items-center'><span><MdPersonOutline/>: </span><span className="text-primary">{comment.node.author.name}</span></div>
-                            <div className='flex items-center'><span><MdOutlineDateRange/>: </span><span className="text-secondary">{comment.node.author.email}</span></div>
+                            <div className='flex items-center'><span><MdPersonOutline className='text-2xl'/> </span><span className="text-primary mx-1">{comment.node.author.name}</span></div>
+                            <div className='flex items-center'><span><MdOutlineDateRange className='text-2xl'/> </span><span className="text-secondary mx-1">{comment.node.author.email}</span></div>
                           </div>
-                          <div className=' pt-4' dangerouslySetInnerHTML={{__html:comment.node. contentHtml}}/>
+                          <div className=' pt-4' dangerouslySetInnerHTML={{__html:comment.node.contentHtml}}/>
                         </div>
                       </div>
                     ))
@@ -81,7 +90,7 @@ const {handle}=router.query
               
           </div>
           <div className="col-span-1 border p-2 flex md:block flex-wrap ">
-            <h1 className='my-4 w-full text-center text-2xl'>Recent Articles</h1>
+            <h1 className='my-4 w-full text-center text-2xl'>{t("blog:recent_articles")}</h1>
             {articles&&articles.edges.map((article,index)=>(
               <div key={index} className="w-1/2 md:w-full  mb-2">
               <div className="mx-0.5 border">
@@ -116,7 +125,7 @@ export async function getStaticPaths ({locales}){
     if(articles){
         articles.edges.map(article=>{
           locales.map(locale=>{
-          paths.push({params:{handle:article.node.blog.handle.toLowerCase(),title:article.node.handle.toLowerCase()},locale})
+          paths.push({params:{blog:article.node.blog.handle.toLowerCase(),title:article.node.handle.toLowerCase()},locale})
         })
         })
     }
@@ -128,33 +137,27 @@ export async function getStaticPaths ({locales}){
 }
 
 export const getStaticProps=async(ctx)=>{
-    const {handle,title} =ctx.params;
+    const {blog,title} =ctx.params;
     const locale=ctx.locale;
     try{
       const articles=await getArticles(locale)
-
       const pages=await getPages(locale) 
-      const clothes=await getProductsType("clothes",locale)
-      const shoes=await getProductsType("shoes",locale)
-      const accessory=await getProductsType("accessory",locale)
-      const article=await getblogArticleByHandle(handle,title,locale)
+      const article=await getblogArticleByHandle(blog,title,locale)
       return{
         props:{
           article:JSON.parse(article)||{},
           articles:JSON.parse(articles)||{},
-          productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)}||[],
           pages:JSON.parse(pages)||[],
            errMsg:false,
-          ...(await serverSideTranslations(locale, ['common']))
+          ...(await serverSideTranslations(locale, ['common',"product"]))
         }
       }
 
     }catch(err){
-        console.log("errror ===>",err)
         return{
             props:{
                 errMsg:true,
-                ...(await serverSideTranslations(locale, ['common']))
+                ...(await serverSideTranslations(locale, ['common',"product"]))
             }
         }
     }

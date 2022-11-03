@@ -60,6 +60,7 @@ const handleDislike=()=>{
         <Slider
           asNavFor={nav2}
           lazyLoad={true}
+          arrows={false}
           ref={slider => setNav1(slider)}
         >{images.map((img,index)=>(
           <div key={index} className="relative flex justify-center  overflow-hidden ">
@@ -67,7 +68,7 @@ const handleDislike=()=>{
               <Link href={`/product/${handle}`}>
                 <a onMouseEnter={()=>setImgHover(true)} onMouseLeave={()=>setImgHover(false)} className=" ">
                   <div className="md:h-72 h-48 w-full relative  overflow-hidden">
-                      {<Image src={img.node.url} alt="" layout="fill" objectFit="contain" objectPosition={"center"} loading="eager"/>}
+                      {<Image src={img.node.url} alt="" layout="fill" objectFit="cover" objectPosition={"center"} loading="eager"/>}
                       
                   </div>
                 </a>

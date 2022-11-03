@@ -9,10 +9,11 @@ import { API_URL } from '../../utils/url';
 import Loading from '../../components/loading/Loading';
 import { useTranslation } from 'next-i18next';
 import Image from 'next/image';
-import { getCollectionByHande, getPages, getProducts, getProductsType } from '../../lib/shopify';
+import { getCollectionByHande, getPages, getProducts, searchProducts } from '../../lib/shopify';
 
- function Products({collection,errMsg,pages,productsTypes,products}){
+ function Products({collection,errMsg,pages,products}){
     const router=useRouter();
+    const {pathname,query,asPath}=router;
     const {t,i18n}=useTranslation();
     const [productItems,setproductItems]=useState(collection);
     const [maxPrice,setMaxPrice]=useState(0);
@@ -29,24 +30,18 @@ import { getCollectionByHande, getPages, getProducts, getProductsType } from '..
     const [loading,setLoading]=useState(true);
     const progres=useRef(); 
 
-
+    useEffect(()=>{
+        router.push({pathname,query},asPath,{locale:i18n.language})
+       },[i18n.language])
    
+
     //loading
     useEffect(()=>{
-        console.log("router",router)
+
         setLoading(false);
         setAllProducts(collection?collection.products.edges:products?products.edges:[])
     },[collection,products])
-/*
-    useEffect(()=>{
-        setproductItems(products);
-        setPrice(maxPrice);
-     },[products])
-     
-    useEffect(()=>{
-        progres.current&&(progres.current.style.width=`${i18n.language==="ar"?-(((price-miniPrice)/(maxPrice-miniPrice))*100):(((price-miniPrice)/(maxPrice-miniPrice))*100)}%`)
-    },[price,progres,maxPrice,miniPrice,i18n.language])
-*/
+
 
 
     const colorArr=[];
@@ -62,7 +57,6 @@ import { getCollectionByHande, getPages, getProducts, getProductsType } from '..
 useEffect(()=>{
         let miniP=0;
         let maxP=0;
-        console.log("products",allProducts)
      allProducts.length>0&&allProducts.forEach(item=>{  
           if(parseInt(item.node.variants.edges[0].node.priceV2.amount)>maxP){
             //maxPrice=item.attributes.price
@@ -160,7 +154,6 @@ const handleFilterColor=()=>{
 //handle filter size
 const handleFilterSize=()=>{
     const items=[]
-    console.log("handle",size)
     if(size==="allSize"){
         
         setAllProducts(collection.products?collection.products.edges:products?products.edges:[])
@@ -200,7 +193,7 @@ const handleFilterSize=()=>{
     )
     }
     return(
-        <Layout title="products pages" productsTypes={productsTypes} pages={pages}>
+        <Layout title="products pages" desc={""} pages={pages}>
             <div className='relative'>
                 <div className='overflow-hidden block w-full h-72'>
                     {(collection&&collection.image)?
@@ -215,7 +208,7 @@ const handleFilterSize=()=>{
                 </div>
             </div>
             
-              <div className="container relative  mx-auto h-fit font-serif my-8 ">
+              <div className="container relative  mx-auto h-fit  my-8 ">
                <div onClick={()=>setSideFilter(true)} className={`fixed ${sideFilter?"hidden":"block"} right-0 top-1/2 z-20 md:hidden`}>
                 <MdArrowBackIosNew className='text-primary text-4xl cursor-pointer'/>
                 </div>
@@ -230,7 +223,7 @@ const handleFilterSize=()=>{
                             </div>
                             )):(
                                 <div className='w-full h-screen flex items-center justify-center'>
-                                    <div className='text-xl text-secondary'> No Product Found </div>
+                                    <div className='text-xl text-secondary'>{t("product:no_product_found")}</div>
                                 </div>
                             )
                     
@@ -388,17 +381,14 @@ export async function getServerSideProps(ctx) {
            products=await getProducts(genre,locale)
         }else if(type==="collection"){
             collection=await getCollectionByHande(genre,20,locale)
+        }else if(type==="search"){
+            products=await searchProducts(genre,locale)
         }
-
+        
         const pages=await getPages(locale)
-        const clothes=await getProductsType("clothes",locale)
-        const shoes=await getProductsType("shoes",locale)
-        const accessory=await getProductsType("accessories",locale)
-        console.log("coll==>",JSON.parse(collection))
             return {
             props: {
                 collection:collection?JSON.parse(collection):null,
-                productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)},
                 products:products.length>0?JSON.parse(products):[],
                 pages:JSON.parse(pages)||[],
                 errMsg:false, 
@@ -406,7 +396,6 @@ export async function getServerSideProps(ctx) {
             },
             }
     }catch(err){
-        console.log("error==>",err)
         return {
             props: {
                 errMsg:true,

@@ -3,7 +3,7 @@ import { MdOutlineFavorite, MdOutlineFavoriteBorder ,MdOutlineWifiCalling3} from
 import {TbTruckReturn,TbTruckDelivery} from 'react-icons/tb'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Link from 'next/link';
-import {createCheckout, getPages, getProductByHande, getProductRecommended, getProductsType, updateCheckout} from '../../lib/shopify';
+import {createCheckout, getPages, getProductByHande, getProductRecommended, updateCheckout} from '../../lib/shopify';
 
 import SingleProductSliders from '../../components/product/SingleProductSlider';
 import Slider from "../../components/home/Slider";
@@ -24,9 +24,10 @@ import { MdOutlineMail,MdPersonOutline } from 'react-icons/md';
 import Stars from '../../components/rating/Stars';
 import Comments from '../../components/comments/Comments';
 import SetStars from '../../components/utils/SetStars';
+import SmallLoader from '../../components/loading/SmallLoader';
 
 
- function SingleProduct ({product,commentsData,rateData,errMsg,pages,productsTypes}){
+ function SingleProduct ({product,commentsData,rateData,errMsg,pages}){
     const {state,dispatch}=useContext(Store);
     const {viewedCart}=state;
     const router =useRouter();
@@ -52,36 +53,14 @@ import SetStars from '../../components/utils/SetStars';
   const [rateValue,setRateValue]=useState(rateData?rateData.rateValue:0);
   const [numOfPeopleRated,setNumOfPeopleRated]=useState(rateData?rateData.numOfPeopleRated:0);
   const [rate,setRate]=useState(5);
+
+  const [checkoutLoading,setCheckoutLoading]=useState(false);
+  const [checkoutErrMessage,setCheckoutErrMessage]=useState("");
   //comment varaible
   const name=useRef();
   const email=useRef();
   const message=useRef();
-  /*useEffect(()=>{
-    if(window.Weglot){
-     window.Weglot.switchTo(i18n.language)
-    }
-  },[i18n.language])
 
-  if(window.Weglot){
-    window.Weglot.on("languageChanged",(newLang, prevLang)=>{
-        router.push({pathname,query},asPath,{locale:newLang})
-    })
-  }
- 
-    if(window.Weglot&&!window.Weglot.nitialized){
-      window.Weglot.initialize({
-        api_key:'wg_df2e98f9cef03f521b0541d1b65028704'
-      });
-      
-    }*/
-   
-      //window.Weglot.off("initialized", ()=>{console.log("initialize off")})
-  
-     /* if(window.Weglot){
-        window.Weglot.initialize({
-          api_key:'wg_df2e98f9cef03f521b0541d1b65028704'
-        });
-      }*/
   
       useEffect(()=>{
         router.push({pathname,query},asPath,{locale:i18n.language})
@@ -196,26 +175,44 @@ useEffect(()=>{
 
   // create checkout items
  const handleCheckout=async ()=>{
+
    const checkoutId=Cookies.get("checkoutId")?JSON.parse(Cookies.get("checkoutId")):null
-   //const checkoutId=null
 
-    try{
-        if(checkoutId){
+         const data=[{id:varientData.id,variantQuantity:parseFloat(qty)}]
+     
+        const url=`${API_URL}/checkout`
+        const options={
 
-            const data=[{id:varientData.id,variantQuantity:parseInt(qty)}]
-            const res=  await updateCheckout(data,checkoutId) 
-            const checkout=JSON.parse(res);
-            router.push(checkout.webUrl)
-        }else{
-            const data=[{id:varientData.id,variantQuantity:parseInt(qty)}]
-            const res=  await createCheckout(data)
-            const checkout=JSON.parse(res); 
-            Cookies.set("checkoutId",JSON.stringify(checkout.id))
-            router.push(checkout.webUrl)
-        }
-    }catch(err){
-        console.log("check out err",err)
-    }
+                 endpoint: url,
+                 method: "POST",
+                 headers: {
+                   "Accept": "application/json",
+                   "Content-Type": "application/json",
+                 },
+                 body: JSON.stringify({ data,checkoutId })
+      }
+      setCheckoutLoading(true)
+      const res = await fetch(url, options)
+      const resData=await res.json();
+
+      if(resData.checkoutCreate&&resData.checkoutCreate.checkout){
+       Cookies.set("checkoutId",JSON.stringify(resData.checkoutCreate.checkout.id))
+       setCheckoutLoading(false)
+       router.push(resData.checkoutCreate.checkout.webUrl)
+      }else if(resData.checkoutLineItemsReplace&&resData.checkoutLineItemsReplace.checkout){
+       Cookies.set("checkoutId",JSON.stringify(resData.checkoutLineItemsReplace.checkout.id))
+       setCheckoutLoading(false)
+       router.push(resData.checkoutLineItemsReplace.checkout.webUrl)
+      }else if(resData.checkoutUserErrors){
+        setCheckoutErrMessage(resData.checkoutUserErrors[0].message)
+       setCheckoutLoading(false)
+      }else if(resData.userErrors){
+       setCheckoutErrMessage(resData.userErrors[0].message)
+       setCheckoutLoading(false)
+      }
+     
+    
+   
  }
 
 
@@ -264,12 +261,8 @@ useEffect(()=>{
 
     if(rateRes.product.metafields.edges.length>0){
               rateRes.product.metafields.edges.map(item=>{
-                console.log("items",item)
                   if(item.node.namespace==="rate"){
-                      const value=item.node.value.split("-");
-                      console.log("reateId",item.node.id)
-                      console.log("value",value)
-                      
+                      const value=item.node.value.split("-");     
                       setRateId(item.node.id)
                       setRateValue(value[0]?value[0]:0)
                       setNumOfPeopleRated(value[1]?value[1]:0)
@@ -302,14 +295,14 @@ useEffect(()=>{
 
  if(loading){
     return(
-     <Layout title={`product-${product.title}`} desc={"product.meta_desc"} productsTypes={productsTypes} pages={pages}>
+     <Layout title={`product-${product.title}`} desc={"product.meta_desc"}  pages={pages}>
          <Loading/>
      </Layout>
     )
   }
     return(
-        <Layout title={`product-${product.title}`} desc={"product.meta_desc"} productsTypes={productsTypes} pages={pages}>
-            <div className="container relative  mx-auto my-4 h-fit font-serif">
+        <Layout title={`product-${product.title}`} desc={"product.meta_desc"}  pages={pages}>
+            <div className="container relative  mx-auto my-4 h-fit ">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 mb-4">
                     <div ref={imgHight} className="col-span-1 h-full text-center">
@@ -369,7 +362,7 @@ useEffect(()=>{
                                 <MdOutlineFavoriteBorder className='text-2xl'/>
                             </button>
                             </div>
-                            <button onClick={()=>handleUpdate()} className=" transition ease-in-out delay-0 duration-500 hover:bg-white hover:text-primary border border-primary bg-gradient-to-tr from-primary to-secondary md:flex-grow text-white  items-center w-full flex justify-center text-xl ">
+                            <button onClick={()=>handleUpdate()} className="py-2 transition ease-in-out delay-0 duration-500 hover:bg-white hover:text-primary border border-primary bg-gradient-to-tr from-primary to-secondary md:flex-grow text-white  items-center w-full flex justify-center text-xl ">
                                 {t("product:add_to_card")}
                             </button>
                             <button className=" p-2 items-center w-fit mx-4 md:flex hidden justify-center ">
@@ -384,9 +377,9 @@ useEffect(()=>{
                             
                         </div>
                         <div className='md:px-4'>
-                            
-                        <button onClick={handleCheckout} className="my-8 transition ease-in-out delay-0 duration-500 hover:bg-primary hover:text-white border border-primary bg-white  text-gray-900 p-2 items-center w-full flex justify-center text-xl ">
-                            {t("product:buy_now")}
+                            {checkoutErrMessage&&<div className='text-red-600 text-center'>{checkoutErrMessage}</div>}
+                        <button disabled={checkoutLoading} onClick={handleCheckout} className="my-8 transition ease-in-out delay-0 duration-500 hover:bg-primary hover:text-white border border-primary bg-white  text-gray-900 p-2 items-center w-full flex justify-center text-xl ">
+                            {checkoutLoading?<SmallLoader/>:t("product:buy_now")}
                         </button>
                        
                         </div>
@@ -450,7 +443,7 @@ useEffect(()=>{
                       <textarea ref={message} required minLength={5} rows={8}  className="w-full outline-none border-primary border py-2 px-4"  placeholder={t("product:message")}/>
                     </div>
                     <div className="w-full text-end px-4">
-                        <button disabled={commentLoading} type='submit' className='px-4 py-2 bg-primary text-white capitalize'>{commentLoading?t("product:wait"):t("product:send_message")}</button>
+                        <button disabled={commentLoading} type='submit' className='px-4 py-2 bg-primary text-white capitalize'>{commentLoading?<SmallLoader/>:t("product:send_message")}</button>
                     </div>
                     
                 </form>
@@ -496,9 +489,7 @@ export async function getServerSideProps(ctx) {
     
     const pages=await getPages(locale)
     const product= await getProductByHande(slug,locale)  
-    const clothes=await getProductsType("clothes",locale)
-    const shoes=await getProductsType("shoes",locale)
-    const accessory=await getProductsType("accessories",locale) 
+ 
 
     // get comments and rates
     let comments="";
@@ -513,11 +504,9 @@ export async function getServerSideProps(ctx) {
    
 
         const  ratedValueSplit=rate.product.metafields.edges[0]?rate.product.metafields.edges[0].node.value.split("-"):""
-
         return {
         props: {
            product:JSON.parse(product)||[],
-           productsTypes:{clothes:JSON.parse(clothes),shoes:JSON.parse(shoes),accessory:JSON.parse(accessory)},
            pages:JSON.parse(pages)||[],
            commentsData:comments?comments.product.metafields.edges:[],
            rateData:rate.product.metafields.edges[0]?{rateId:rate.product.metafields.edges[0].node.id,rateValue:ratedValueSplit[0]?ratedValueSplit[0]:0,numOfPeopleRated:ratedValueSplit[1]?ratedValueSplit[1]:0}:null,

@@ -31,5 +31,6 @@
     "comment_success_message":"رسالتك ارسلت بنجاح اعد تحيل الصفحة حني نري تعليقك",
     "comment_error_message":"هناك شئ خاطئ حاول مرة ثانية",
     "fill_all_fields":"أملا جميع الخانات",
-    "recent_viewed":"أخر ما شاهدت"
+    "recent_viewed":"أخر ما شاهدت",
+    "no_product_found":"لاتوجد نتجات"
 }

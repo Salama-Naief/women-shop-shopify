@@ -14,7 +14,7 @@ function Policies() {
     <div className='flex flex-wrap container mx-auto mb-4'>
         {
             data.length>0&&data.map((item,index)=>(
-                <div key={index} className='flex w-1/2 p-4 md:w-1/3 my-4 items-center '>
+                <div key={index} className='flex w-fulll p-4 md:w-1/2 lg:1/3 my-4 items-center '>
                   
                   <div className='relative w-14 h-14 rounded-full'>
                     <Image src={item.imgUrl} layout='fill' alt={item.imgUrl}/>
