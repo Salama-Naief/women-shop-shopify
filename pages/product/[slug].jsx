@@ -19,7 +19,6 @@ import { useRouter } from 'next/router';
 import {data} from "../../utils/productPolicy";
 import { createComment } from '../../lib/shopifyAdmin';
 import axios from 'axios';
-import ShowRating from '../../components/rating/showRating';
 import { MdOutlineMail,MdPersonOutline } from 'react-icons/md';
 import Stars from '../../components/rating/Stars';
 import Comments from '../../components/comments/Comments';
